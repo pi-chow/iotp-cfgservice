@@ -9,19 +9,14 @@ import java.util.Map;
 
 @Repository
 public interface DeviceAlarmConfigMapper {
+
     int deleteByPrimaryKey(String alarmId);
 
     int insert(DeviceAlarmConfig record);
 
-    int insertSelective(DeviceAlarmConfig record);
-
-    DeviceAlarmConfig selectByPrimaryKey(Long id);
-
     DeviceAlarmConfig getAlarmConfig(String alarmId);
 
     int updateByPrimaryKeySelective(DeviceAlarmConfig record);
-
-    int updateByPrimaryKey(DeviceAlarmConfig record);
 
     List<DeviceAlarmConfig> searchDeviceAlarmConfig(Map<String, Object> params);
 }

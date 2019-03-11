@@ -1,6 +1,5 @@
 package com.cetiti.iotpcfgservice.service.impl;
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
 import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotpcfgservice.common.id.UniqueIdGenerator;
@@ -12,7 +11,6 @@ import com.cetiti.iotpcfgservice.service.AlarmService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.slf4j.Logger;
@@ -50,10 +48,6 @@ public class AlarmServiceImpl implements AlarmService {
     @Reference
     private DeviceModelService deviceModelService;
 
-
-    public final static String ADMIN = "admin";
-    public final static String DEPARTMENT_ADMIN = "department_admin";
-    public final static String USER = "user";
     private static File file = new File("exception-guard.xml");
 
     private static Long LastModified = System.currentTimeMillis();
@@ -68,34 +62,35 @@ public class AlarmServiceImpl implements AlarmService {
 
     /**
      * 新增告警配置
-     *
-     * @param alarmcfg 告警配置类
+     * @param account 账户
+     * @param record 告警配置类
      * @return
      */
     @Override
-    public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmcfg) {
+    public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig record) {
         setLastModified();
         String alarmId = uniqueIdGenerator.generateAlarmId();
-        alarmcfg.setAlarmId(alarmId);
-        alarmcfg.setCreateTime(new Date());
-        alarmcfg.setModifyTime(new Date());
-        alarmcfg.setCreateUser(account.getUserId());
-        alarmcfg.setModifyUser(account.getUserId());
-        deviceAlarmConfigMapper.insert(alarmcfg);
+        record.setAlarmId(alarmId);
+        record.setCreateTime(new Date());
+        record.setModifyTime(new Date());
+        record.setCreateUser(account.getUserId());
+        record.setModifyUser(account.getUserId());
+        deviceAlarmConfigMapper.insert(record);
         return alarmId;
     }
 
     /**
      * 修改告警配置
-     *
+     * @param account 账户
+     * @param record 告警配置类
      * @return
      */
     @Override
-    public boolean updateAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmcfg) {
+    public boolean updateAlarmConfig(JwtAccount account, DeviceAlarmConfig record) {
         setLastModified();
-        alarmcfg.setModifyTime(new Date());
-        alarmcfg.setModifyUser(account.getUserId());
-        return deviceAlarmConfigMapper.updateByPrimaryKeySelective(alarmcfg) == 1;
+        record.setModifyTime(new Date());
+        record.setModifyUser(account.getUserId());
+        return deviceAlarmConfigMapper.updateByPrimaryKeySelective(record) == 1;
     }
 
     /**
@@ -117,29 +112,18 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public List<DeviceAlarmConfig> getAlarmConfig(JwtAccount account, Map<String, Object> params) {
+
         List<DeviceAlarmConfig> empty = new ArrayList<>();
+
         if (account == null) {
             return empty;
-        }
-        String[] roleList = StringUtils.split(account.getRoles(), ",");
-        if (ArrayUtils.indexOf(roleList, ADMIN) >= 0) {
+        }else {
             return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
         }
-
-        if (ArrayUtils.indexOf(roleList, DEPARTMENT_ADMIN) >= 0) {
-            params.put("departmentId", account.getDepartmentId());
-            return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
-        }
-
-        if (ArrayUtils.indexOf(roleList, USER) >= 0) {
-            params.put("departmentId", account.getDepartmentId());
-            return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
-        }
-
-        return empty;
     }
 
-    public List<DeviceAlarmConfig> getAllAlarmConfig(Map<String, Object> params) {
+    @Override
+    public List<DeviceAlarmConfig> getAlarmConfig(Map<String, Object> params) {
         return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
     }
 
@@ -183,28 +167,9 @@ public class AlarmServiceImpl implements AlarmService {
         List<ExceptionAlarm> empty = new ArrayList<>();
         if (account == null) {
             return empty;
-        }
-        String[] roleList = StringUtils.split(account.getRoles(), ",");
-        if (ArrayUtils.indexOf(roleList, ADMIN) >= 0) {
+        }else {
             return alarmMapper.deviceAlarmList(params);
         }
-
-        if (ArrayUtils.indexOf(roleList, DEPARTMENT_ADMIN) >= 0) {
-            params.put("departmentId", account.getDepartmentId());
-            return alarmMapper.deviceAlarmList(params);
-        }
-
-        if (ArrayUtils.indexOf(roleList, USER) >= 0) {
-            params.put("departmentId", account.getDepartmentId());
-            return alarmMapper.deviceAlarmList(params);
-        }
-        return alarmMapper.deviceAlarmList(params);
-    }
-
-
-    @Override
-    public List<DeviceModel> getDeviceModels(JwtAccount account) {
-        return deviceModelService.listDeviceModel();
     }
 
 

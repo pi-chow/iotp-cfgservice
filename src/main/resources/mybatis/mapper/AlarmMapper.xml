@@ -4,22 +4,29 @@
     
     <select id="deviceAlarmList" parameterType="java.util.Map"
             resultType="com.cetiti.iotpcfgservice.domain.ExceptionAlarm">
-        SELECT ea.* , dm.device_model_name FROM t_exception_alarm ea
-        left join t_device_model dm on ea.device_model = dm.device_model
-        left join t_device d on ea.device_sn = d.sn
+        SELECT id,device_model,device_sn,`value`,alarm,create_time,conditions,indexCode,alarm_level
+        FROM t_exception_alarm
         <where>
-            <if test="deviceModel != null">AND ea.device_model = #{deviceModel}</if>
-            <if test="deviceSn != null">AND ea.device_sn LIKE CONCAT('%',#{deviceSn},'%')</if>
-            <if test="startTime != null">AND ea.create_time &gt; #{startTime}</if>
-            <if test="endTime != null">AND ea.create_time &lt; #{endTime}</if>
-            <if test="conditions != null">AND ea.conditions LIKE CONCAT('%',#{conditions},'%')</if>
-            <if test="departmentId != null">AND d.department_id = #{departmentId}</if>
+            <if test="deviceModel != null">
+                AND device_model = #{deviceModel}
+            </if>
+            <if test="deviceSn != null">
+                AND device_sn LIKE CONCAT('%',#{deviceSn},'%')
+            </if>
+            <if test="startTime != null">
+                AND create_time &gt; #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND create_time &lt; #{endTime}
+            </if>
+            <if test="conditions != null">
+                AND conditions LIKE CONCAT('%',#{conditions},'%')
+            </if>
         </where>
     </select>
 
-
     <select id="alarmCountByModel" parameterType="HashMap" resultType="Integer">
-        SELECT COUNT(0)
+        SELECT COUNT(id)
         FROM t_exception_alarm
         WHERE device_model = #{deviceModel}
     </select>

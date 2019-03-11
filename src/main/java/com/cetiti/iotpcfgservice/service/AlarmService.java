@@ -1,7 +1,6 @@
 package com.cetiti.iotpcfgservice.service;
 
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotpcfgservice.domain.ExceptionAlarm;
@@ -20,11 +19,7 @@ public interface AlarmService {
     boolean deleteAlarmConfig(String alarmId);
 
     List<DeviceAlarmConfig> getAlarmConfig(JwtAccount account, Map<String, Object> params);
-
-    List<DeviceAlarmConfig> getAllAlarmConfig(Map<String, Object> params);
-
-    List<DeviceModel> getDeviceModels(JwtAccount account);
-
+    List<DeviceAlarmConfig> getAlarmConfig(Map<String, Object> params);
 
     List<ExceptionAlarm> deviceAlarmList(JwtAccount account, Map<String, Object> params);
 
