@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cetiti.iotpcfgservice.mapper.DeviceAlarmConfigMapper">
+    <resultMap id="BaseResultMap" type="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="device_model_id" jdbcType="VARCHAR" property="deviceModelId"/>
+        <result column="device_model" jdbcType="VARCHAR" property="deviceModel"/>
+        <result column="device_model_name" jdbcType="VARCHAR" property="deviceModelName"/>
+        <result column="device_sn" jdbcType="VARCHAR" property="deviceSn"/>
+        <result column="field" jdbcType="VARCHAR" property="field"/>
+        <result column="alarm_level" jdbcType="TINYINT" property="alarmLevel"/>
+        <result column="conditions" jdbcType="VARCHAR" property="conditions"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="alarm_id" jdbcType="VARCHAR" property="alarmId"/>
+        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
+        <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
+        <result column="modify_user" jdbcType="VARCHAR" property="modifyUser"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id, device_model_id, device_model, device_sn, field, conditions, description, alarm_id, alarm_level,
+        modify_time, create_user, modify_user, create_time
+    </sql>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_alarm_config
+        where id = #{id,jdbcType=BIGINT}
+    </select>
+    <select id="getAlarmConfig" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from t_device_alarm_config
+        where alarm_id = #{alarmId}
+    </select>
+
+    <select id="searchDeviceAlarmConfig" parameterType="java.util.Map" resultMap="BaseResultMap">
+        select
+        dac.*, dm.device_model_name
+        from t_device_alarm_config dac
+        <if test="departmentId != null">
+            left join t_device d on dac.device_sn = d.sn
+        </if>
+            left join t_device_model dm on dac.device_model = dm.device_model
+        <where>
+            <if test="deviceModel != null">AND dac.device_model = #{deviceModel}</if>
+            <if test="deviceSn != null">AND dac.device_sn LIKE CONCAT('%',#{deviceSn},'%')</if>
+            <if test="departmentId != null">AND d.department_id = #{departmentId}</if>
+        </where>
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_device_alarm_config
+    where alarm_id = #{alarmId,jdbcType=VARCHAR}
+  </delete>
+    <insert id="insert" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
+    insert into t_device_alarm_config (device_model_id, device_model, 
+      device_sn, field, conditions, 
+      description, alarm_id, modify_time, 
+      create_user, modify_user, create_time
+      )
+    values ( #{deviceModelId,jdbcType=VARCHAR}, #{deviceModel,jdbcType=VARCHAR}, 
+      #{deviceSn,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR}, #{conditions,jdbcType=VARCHAR}, 
+      #{description,jdbcType=VARCHAR}, #{alarmId,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, 
+      #{createUser,jdbcType=VARCHAR}, #{modifyUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+    <insert id="insertSelective" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
+        insert into t_device_alarm_config
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                id,
+            </if>
+            <if test="deviceModelId != null">
+                device_model_id,
+            </if>
+            <if test="deviceModel != null">
+                device_model,
+            </if>
+            <if test="deviceSn != null">
+                device_sn,
+            </if>
+            <if test="field != null">
+                field,
+            </if>
+            <if test="conditions != null">
+                conditions,
+            </if>
+             <if test="alarmLevel != null">
+                alarm_Level, 
+            </if>
+            <if test="description != null">
+                description,
+            </if>
+            <if test="alarmId != null">
+                alarm_id,
+            </if>
+            <if test="modifyTime != null">
+                modify_time,
+            </if>
+            <if test="createUser != null">
+                create_user,
+            </if>
+            <if test="modifyUser != null">
+                modify_user,
+            </if>
+            <if test="createTime != null">
+                create_time,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">
+                #{id,jdbcType=BIGINT},
+            </if>
+            <if test="deviceModelId != null">
+                #{deviceModelId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceModel != null">
+                #{deviceModel,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceSn != null">
+                #{deviceSn,jdbcType=VARCHAR},
+            </if>
+            <if test="field != null">
+                #{field,jdbcType=VARCHAR},
+            </if>
+            <if test="conditions != null">
+                #{conditions,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmLevel != null">
+                #{alarmLevel,jdbcType=TINYINT},
+            </if>
+            <if test="description != null">
+                #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmId != null">
+                #{alarmId,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="createUser != null">
+                #{createUser,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyUser != null">
+                #{modifyUser,jdbcType=VARCHAR},
+            </if>
+            <if test="createTime != null">
+                #{createTime,jdbcType=TIMESTAMP},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
+        update t_device_alarm_config
+        <set>
+            <if test="deviceModelId != null">
+                device_model_id = #{deviceModelId,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceModel != null">
+                device_model = #{deviceModel,jdbcType=VARCHAR},
+            </if>
+                 device_sn = #{deviceSn,jdbcType=VARCHAR},
+            <if test="field != null">
+                field = #{field,jdbcType=VARCHAR},
+            </if>
+            <if test="alarmLevel != null">
+                alarm_Level = #{alarmLevel,jdbcType=TINYINT},
+            </if>
+            <if test="conditions != null">
+                conditions = #{conditions,jdbcType=VARCHAR},
+            </if>
+            <if test="description != null">
+                description = #{description,jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyUser != null">
+                modify_user = #{modifyUser,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where alarm_id = #{alarmId,jdbcType=VARCHAR}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
+    update t_device_alarm_config
+    set device_model_id = #{deviceModelId,jdbcType=VARCHAR},
+      device_model = #{deviceModel,jdbcType=VARCHAR},
+      device_sn = #{deviceSn,jdbcType=VARCHAR},
+      field = #{field,jdbcType=VARCHAR},
+      conditions = #{conditions,jdbcType=VARCHAR},
+      description = #{description,jdbcType=VARCHAR},
+      alarm_id = #{alarmId,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      create_user = #{createUser,jdbcType=VARCHAR},
+      modify_user = #{modifyUser,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

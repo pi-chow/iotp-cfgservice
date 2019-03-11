@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cetiti.iotpcfgservice.mapper.ThingModelDefMapper">
+
+	<resultMap id="ThingModel"
+		type="com.cetiti.iotpcfgservice.domain.ThingModelDef">
+		<result column="name" property="name" />
+		<result column="device_model_id" property="deviceModelId" />
+		<result column="device_model" property="deviceModel" />
+		<result column="device_model_name" property="deviceModelName" />
+		<result column="thing_model_type" property="thingModelType" />
+		<result column="thing_model_id" property="thingModelId" />
+		<result column="structType" property="struct_type" />
+		<result column="template" property="template" />
+		<result column="description" property="description" />
+		<result column="sqls" property="sqls" />
+		<result column="storeTypes" property="store_types" />
+		<result column="create_time" property="createTime" />
+		<result column="create_user" property="createUser" />
+		<result column="modify_user" property="modifyUser" />
+		<result column="modify_time" property="modifyTime" />
+		<collection property="fields"
+			ofType="com.cetiti.iotpcfgservice.domain.ThingModelField"
+			column="thing_model_id"
+			select="com.cetiti.iotpcfgservice.mapper.ThingModelFieldMapper.fieldListById">
+		</collection>
+	</resultMap>
+
+	<insert id="modelAdd"
+		parameterType="com.cetiti.iotpcfgservice.domain.ThingModelDef"
+		useGeneratedKeys="true" keyProperty="id">
+		INSERT INTO
+		t_thing_model
+		(name,device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,struct_type,template,
+		store_types, description,create_user,create_time)
+		VALUES
+		(#{name},#{deviceModelId},#{deviceModel},#{deviceModelName},#{thingModelType},#{thingModelId},#{structType},#{template},
+		#{storeTypes},#{description},#{createUser},#{createTime})
+	</insert>
+
+	<update id="modelUpdate"
+		parameterType="com.cetiti.iotpcfgservice.domain.ThingModelDef">
+		UPDATE
+		t_thing_model
+		<set>
+			<if test="name != null">name = #{name},</if>
+			<if test="deviceModelId != null">device_model_id = #{deviceModelId},</if>
+			<if test="deviceModel != null">device_model = #{deviceModel},</if>
+			<if test="deviceModelName != null">device_model_name = #{deviceModelName},</if>
+			<if test="thingModelType != null">thing_model_type = #{thingModelType},</if>
+			<if test="structType != null">struct_type = #{structType},</if>
+			<if test="template != null">template = #{template},</if>
+			<if test="storeTypes != null">store_types = #{storeTypes},</if>
+			<if test="description != null">description = #{description},</if>
+			<if test="sqls != null">sqls = #{sqls},</if>
+			<if test="createUser != null">create_user = #{createUser},</if>
+			<if test="modifyTime != null">modify_time = #{modifyTime},</if>
+		</set>
+		WHERE
+		thing_model_id = #{thingModelId}
+	</update>
+
+	<update id="deviceModelNameUpdateByModel" parameterType="map">
+		UPDATE
+		t_thing_model
+		<set>
+			<if test="name != null">device_model_name = #{name},</if>
+			modify_time = now(),modify_user=#{modifyUser}
+		</set>
+		WHERE device_model = #{deviceModel}
+	</update>
+
+	<delete id="modelDelete" parameterType="java.lang.String">
+		DELETE FROM t_thing_model
+		WHERE thing_model_id = #{thingModelId}
+	</delete>
+
+	<update id="deviceModelNameUpdateById" parameterType="map">
+		UPDATE
+		t_thing_model SET device_model_name=#{name}, modify_user=#{modifyUser},modify_time = now() WHERE
+		device_model_id=#{deviceModelId}
+	</update>
+
+	<select id="modelViewById" parameterType="java.lang.String"
+		resultMap="ThingModel">
+		SELECT
+		name,struct_type,store_types,template,
+		device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,description,sqls,create_time,modify_time
+		FROM t_thing_model WHERE thing_model_id = #{thingModelId}
+	</select>
+
+	<select id="thingModelCount" parameterType="java.lang.String"
+		resultType="Integer">
+		SELECT COUNT(0) FROM t_thing_model WHERE device_model =
+		#{deviceModel}
+	</select>
+
+	<select id="modelViewByDeviceModelIdAndModelType" resultMap="ThingModel">
+		SELECT
+		name,struct_type,store_types,template,
+		device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,description,sqls,create_time,modify_time
+		FROM t_thing_model WHERE device_model_id = #{deviceModelId} and
+		thing_model_type=#{modelType}
+	</select>
+
+	<select id="modelListByDeviceModelId" parameterType="java.lang.String"
+		resultMap="ThingModel">
+		SELECT
+		name,struct_type,store_types,template,device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,description,sqls,create_time,modify_time
+		FROM t_thing_model WHERE device_model_id = #{deviceModelId}
+	</select>
+
+	<select id="modelList" resultMap="ThingModel">
+		SELECT
+		name,struct_type,store_types,template,device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,description,sqls,create_time,modify_time
+		FROM t_thing_model WHERE 1=1
+		<if test="userId != null">
+			AND create_user = #{userId}
+		</if>
+		<if test="strutType != null">
+			AND struct_type = #{strutType}
+		</if>
+	</select>
+
+
+	<select id="templateModelView" resultMap="ThingModel">
+		SELECT
+		name,struct_type,store_types,template,device_model_id,device_model,device_model_name,thing_model_type,thing_model_id,description,sqls,create_time,modify_time
+		FROM t_thing_model
+		WHERE 1=1
+		AND template = 1 AND thing_model_type='sensory'
+		<if test="userId != null">
+			AND create_user = #{userId}
+		</if>
+		<if test="deviceModel != null and deviceModel != ''">
+			AND device_model = #{deviceModel}
+		</if>
+		<if test="deviceModelName != null and deviceModelName != ''">
+			AND device_model_name LIKE CONCAT(CONCAT('%',#{deviceModelName},'%'))
+		</if>
+		ORDER BY modify_time DESC
+	</select>
+
+	<update id="deleteTemplateByDeviceModelId" parameterType="java.lang.String">
+		UPDATE
+		t_thing_model SET template=0 WHERE device_model_id=#{value}
+	</update>
+</mapper>
