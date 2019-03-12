@@ -38,7 +38,7 @@ public class ThingModelController {
 	private ThingModelService modelService;
 
 	@Autowired
-	private ThingModelProcessor modelProcessor = null;
+	private ThingModelProcessor modelProcessor;
 
 	/**
 	 * 根据设备编号获取模型列表

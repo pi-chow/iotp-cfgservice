@@ -9,6 +9,7 @@ import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
+import com.cetiti.iotpcfgservice.common.access.DevUser;
 import com.cetiti.iotpcfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotpcfgservice.common.result.CfgResultCode;
 import com.cetiti.iotpcfgservice.common.utils.SqlGenerator;
@@ -77,7 +78,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		logger.debug("Publis all model, account[{}].", account);
 
-		List<ThingModelDef> modelList = modelDefMapper.modelList(getUserId(account), null);
+		List<ThingModelDef> modelList = modelDefMapper.modelList(DevUser.isDeveloper(account), null);
         List<ThingModelDef> failure = Lists.newArrayList();
 
 		if (modelList == null || modelList.size() == 0) {
@@ -432,7 +433,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		Map<String, Object> paras = Maps.newHashMap();
 
-		paras.put("userId", StringUtils.isBlank(getUserId(account)) ? null : account.getUserId());
+		paras.put("userId", StringUtils.isBlank(DevUser.isDeveloper(account)) ? null : account.getUserId());
 		paras.put("deviceModel", StringUtils.isBlank(deviceModel) ? null : deviceModel);
 		paras.put("deviceModelName", StringUtils.isBlank(deviceModelName) ? null : deviceModelName);
 
@@ -466,17 +467,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 		ThingModelDef.makeTemplate(sensoryModelDefs.get(0));
 		this.updateModel(account, sensoryModelDefs.get(0));
 
-	}
-
-
-	/**
-	 * 权限控制
-	 * */
-	private static String getUserId(JwtAccount account){
-		if(account.getRoles().equals("dev")){
-			return account.getUserId();
-		}
-		return null;
 	}
 
 

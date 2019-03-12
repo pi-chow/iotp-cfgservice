@@ -1,15 +1,18 @@
 package com.cetiti.iotpcfgservice.controller;
 
 
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceService;
+import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
+import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotpcfgservice.common.result.Result;
 import com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotpcfgservice.domain.ExceptionAlarm;
 import com.cetiti.iotpcfgservice.service.AlarmService;
+import com.cetiti.iotpcfgservice.service.ThingModelService;
 import com.cetiti.iotpcfgservice.service.impl.AlarmServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.config.annotation.Reference;
@@ -40,7 +43,10 @@ public class AlarmController {
     private AlarmService alarmService;
 
     @Reference
-    private DeviceService deviceService;
+    private DeviceModelService deviceModelService;
+
+    @Autowired
+    private ThingModelService thingModelService;
 
 
     /**
@@ -52,10 +58,9 @@ public class AlarmController {
     public Result alarmList(JwtAccount account,
             @RequestParam(required = false, defaultValue = "1") int pageNum,
             @RequestParam(required = false, defaultValue = "10") int pageSize,
-            String deviceModel, String deviceSn) {
+            String deviceModel) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceModel", StringUtils.trimToNull(deviceModel));
-        params.put("deviceSn", StringUtils.trimToNull(deviceSn));
         Page<Object> pageInfo = PageHelper.startPage(pageNum, pageSize, "create_time desc");
         List<DeviceAlarmConfig> deviceAlarmConfigs = alarmService.getAlarmConfig(account, params);
         return Result.ok().put("alarms", deviceAlarmConfigs)
@@ -103,8 +108,11 @@ public class AlarmController {
     @PostMapping(value = "/add")
     public Result addAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
         alarmConfig.setDeviceSn(StringUtils.trimToNull(alarmConfig.getDeviceSn()));
-        if (alarmConfig.getDeviceSn() != null && deviceService.view(alarmConfig.getDeviceModel(), alarmConfig.getDeviceSn()) == null) {
-            return Result.error("设备sn不存在");
+        if(alarmConfig.getDeviceModel() != null){
+            DeviceModel deviceModel = deviceModelService.view(alarmConfig.getDeviceModel());
+            if(deviceModel == null){
+                return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
+            }
         }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
         return alarmId != null ? Result.ok().put("alarmId", alarmId) : Result
@@ -117,12 +125,14 @@ public class AlarmController {
      * @return
      */
     @PutMapping(value = "/update")
-    public Result updateAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig deviceAlarmConfig) {
-        deviceAlarmConfig.setDeviceSn(StringUtils.trimToNull(deviceAlarmConfig.getDeviceSn()));
-        if (deviceAlarmConfig.getDeviceSn() != null && deviceService.view(deviceAlarmConfig.getDeviceModel(), deviceAlarmConfig.getDeviceSn()) == null) {
-            return Result.error("设备sn不存在");
+    public Result updateAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
+        if(alarmConfig.getDeviceModel() != null){
+            DeviceModel deviceModel = deviceModelService.view(alarmConfig.getDeviceModel());
+            if(deviceModel == null){
+                return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
+            }
         }
-        boolean success = alarmService.updateAlarmConfig(account, deviceAlarmConfig);
+        boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         return success ? Result.ok() : Result.error("告警配置更新失败");
     }
 
@@ -132,7 +142,7 @@ public class AlarmController {
      * @return
      */
     @DeleteMapping(value = "/delete/{alarmId}")
-    public Result deleteAlarm(JwtAccount account, @PathVariable("alarmId") String alarmId) {
+    public Result deleteAlarm(@PathVariable("alarmId") String alarmId) {
 
         boolean success = alarmService.deleteAlarmConfig(alarmId);
         return success ? Result.ok() : Result.error("删除告警失败！");
@@ -147,7 +157,26 @@ public class AlarmController {
     @GetMapping(value = "/getAlarmCfg")
     public Result getAlarmCfgInfo(HttpServletResponse response) {
         response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
-        return Result.ok().put("guard", alarmService.getAlarmConfig(new HashMap<>()));
+        return Result.ok().put("guard", alarmService.getAlarmConfig(null, new HashMap<>()));
+    }
+
+
+    /**
+     * 根据设备类型获取告警属性
+     *
+     * @return
+     */
+    @GetMapping(value = "/getAttributeListByType/{category}")
+    public Result getAttributeListByCategory(@PathVariable String category) {
+        try {
+
+            return Result.ok().put("attributeList", thingModelService.listSensoryThingModelFieldByDeviceModel(null, category));
+        } catch (Exception e) {
+            logger.warn("GetAttributeListByCategory fail, category[" + category
+                    + "].", e);
+            return Result.error("根据设备类型获取告警属性失败！");
+        }
+
     }
 
 }

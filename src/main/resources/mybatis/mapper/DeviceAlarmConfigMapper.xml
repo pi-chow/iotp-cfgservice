@@ -5,7 +5,6 @@
         <id column="id" jdbcType="BIGINT" property="id"/>
         <result column="device_model" jdbcType="VARCHAR" property="deviceModel"/>
         <result column="device_model_name" jdbcType="VARCHAR" property="deviceModelName"/>
-        <result column="device_sn" jdbcType="VARCHAR" property="deviceSn"/>
         <result column="field" jdbcType="VARCHAR" property="field"/>
         <result column="alarm_level" jdbcType="TINYINT" property="alarmLevel"/>
         <result column="conditions" jdbcType="VARCHAR" property="conditions"/>
@@ -18,7 +17,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, device_model, device_sn, field, conditions, description, alarm_id, alarm_level,
+        id, device_model, device_model_name, field, conditions, description, alarm_id, alarm_level,
         modify_time, create_user, modify_user, create_time
     </sql>
 
@@ -37,8 +36,8 @@
             <if test="deviceModel != null">
                 AND device_model = #{deviceModel}
             </if>
-            <if test="deviceSn != null">
-                AND device_sn LIKE CONCAT('%',#{deviceSn},'%')
+            <if test="createUser != null">
+                AND create_user = #{createUser}
             </if>
         </where>
     </select>
@@ -49,15 +48,15 @@
     </delete>
 
     <insert id="insert" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model,
-          device_sn, field, conditions,
-          description, alarm_id, modify_time,
-          create_user, modify_user, create_time
+        insert into t_device_alarm_config (device_model,device_model_name,
+          field, conditions,
+          description, alarm_id, alarm_level,
+          create_user, create_time
           )
-        values (#{deviceModel,jdbcType=VARCHAR},
-          #{deviceSn,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR}, #{conditions,jdbcType=VARCHAR},
-          #{description,jdbcType=VARCHAR}, #{alarmId,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP},
-          #{createUser,jdbcType=VARCHAR}, #{modifyUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
+        values (#{deviceModel,jdbcType=VARCHAR},#{deviceModelName,jdbcType=VARCHAR}
+          #{field,jdbcType=VARCHAR}, #{conditions,jdbcType=VARCHAR},
+          #{description,jdbcType=VARCHAR}, #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT}
+          #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
           )
     </insert>
 
@@ -67,7 +66,9 @@
                 <if test="deviceModel != null">
                     device_model = #{deviceModel,jdbcType=VARCHAR},
                 </if>
-                     device_sn = #{deviceSn,jdbcType=VARCHAR},
+                <if test="deviceModelName != null">
+                    device_model_name = #{deviceModelName,jdbcType=VARCHAR},
+                </if>
                 <if test="field != null">
                     field = #{field,jdbcType=VARCHAR},
                 </if>

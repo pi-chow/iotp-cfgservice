@@ -1,7 +1,7 @@
 package com.cetiti.iotpcfgservice.service.impl;
 
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.iotpcfgservice.common.access.DevUser;
 import com.cetiti.iotpcfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotpcfgservice.domain.ExceptionAlarm;
@@ -12,7 +12,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.dubbo.config.annotation.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +43,6 @@ public class AlarmServiceImpl implements AlarmService {
     @Autowired
     private DeviceAlarmConfigMapper deviceAlarmConfigMapper;
 
-    @Reference
-    private DeviceModelService deviceModelService;
 
     private static File file = new File("exception-guard.xml");
 
@@ -72,9 +68,7 @@ public class AlarmServiceImpl implements AlarmService {
         String alarmId = uniqueIdGenerator.generateAlarmId();
         record.setAlarmId(alarmId);
         record.setCreateTime(new Date());
-        record.setModifyTime(new Date());
         record.setCreateUser(account.getUserId());
-        record.setModifyUser(account.getUserId());
         deviceAlarmConfigMapper.insert(record);
         return alarmId;
     }
@@ -113,17 +107,12 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public List<DeviceAlarmConfig> getAlarmConfig(JwtAccount account, Map<String, Object> params) {
 
-        List<DeviceAlarmConfig> empty = new ArrayList<>();
+        String createUser = DevUser.isDeveloper(account);
 
-        if (account == null) {
-            return empty;
-        }else {
-            return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
+        if(StringUtils.isNoneBlank(createUser)){
+            params.put("createUser", createUser);
         }
-    }
 
-    @Override
-    public List<DeviceAlarmConfig> getAlarmConfig(Map<String, Object> params) {
         return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
     }
 
@@ -163,13 +152,7 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public List<ExceptionAlarm> deviceAlarmList(JwtAccount account, Map<String, Object> params) {
-
-        List<ExceptionAlarm> empty = new ArrayList<>();
-        if (account == null) {
-            return empty;
-        }else {
-            return alarmMapper.deviceAlarmList(params);
-        }
+        return alarmMapper.deviceAlarmList(params);
     }
 
 
