@@ -118,11 +118,10 @@ public interface ThingModelService {
 
     /**
      * 根据设备型号获取物模型感知属性。
-     * @param account 用户
      *
      * @return 消息存储类型。
      */
-    List<ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel);
+    List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel);
     
     /**
      * 物模型模板分页。

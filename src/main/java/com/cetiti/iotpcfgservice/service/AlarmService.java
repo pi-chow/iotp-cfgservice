@@ -10,7 +10,13 @@ import java.util.Map;
 
 public interface AlarmService {
 
-    String addAlarmConfig(JwtAccount account, DeviceAlarmConfig alarm);
+    /**
+     * 添加告警配置
+     * @param account 用户
+     * @param deviceAlarmConfig 配置信息
+     * @return
+     * */
+    String addAlarmConfig(JwtAccount account, DeviceAlarmConfig deviceAlarmConfig);
 
     DeviceAlarmConfig getAlarmConfig(String alarmId);
 

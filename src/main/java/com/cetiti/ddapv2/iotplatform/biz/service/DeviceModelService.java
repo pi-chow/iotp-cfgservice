@@ -40,6 +40,14 @@ public interface DeviceModelService {
     public DeviceModel view(String deviceModel);
 
     /**
+     * 查看型号详情（外部调用）
+     *
+     * @param deviceModel 设备型号
+     * @return
+     */
+    public DeviceModel viewDetail(String deviceModel);
+
+    /**
      * 通过设备型号获取上报报文
      *
      * @param deviceModel 设备型号

@@ -24,7 +24,7 @@ public class Result extends HashMap<String, Object> {
     }
 
     public static Result error(String msg) {
-        return error(BaseResultCode.SERVER_ERROR.getResultCode(), BaseResultCode.SERVER_ERROR.getDescription());
+        return error(BaseResultCode.SERVER_ERROR.getResultCode(), msg);
     }
 
     public static Result error(int code, String msg) {

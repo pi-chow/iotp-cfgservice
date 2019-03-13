@@ -117,7 +117,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>IOTP-CfgService-${project.version}</finalName>
+		<finalName>IOTP-CfgService</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

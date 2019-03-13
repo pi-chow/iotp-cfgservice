@@ -17,7 +17,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, device_model, device_model_name, field, conditions, description, alarm_id, alarm_level,
+        id, device_model, field, conditions, description, alarm_id, alarm_level,
         modify_time, create_user, modify_user, create_time
     </sql>
 
@@ -48,12 +48,12 @@
     </delete>
 
     <insert id="insert" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model,device_model_name,
+        insert into t_device_alarm_config (device_model,
           field, conditions,
           description, alarm_id, alarm_level,
           create_user, create_time
           )
-        values (#{deviceModel,jdbcType=VARCHAR},#{deviceModelName,jdbcType=VARCHAR}
+        values (#{deviceModel,jdbcType=VARCHAR},
           #{field,jdbcType=VARCHAR}, #{conditions,jdbcType=VARCHAR},
           #{description,jdbcType=VARCHAR}, #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT}
           #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
@@ -65,9 +65,6 @@
             <set>
                 <if test="deviceModel != null">
                     device_model = #{deviceModel,jdbcType=VARCHAR},
-                </if>
-                <if test="deviceModelName != null">
-                    device_model_name = #{deviceModelName,jdbcType=VARCHAR},
                 </if>
                 <if test="field != null">
                     field = #{field,jdbcType=VARCHAR},

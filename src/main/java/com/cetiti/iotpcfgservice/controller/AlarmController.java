@@ -7,17 +7,17 @@ import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotpcfgservice.common.result.Result;
 import com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotpcfgservice.domain.ExceptionAlarm;
+import com.cetiti.iotpcfgservice.domain.ThingModelField;
 import com.cetiti.iotpcfgservice.service.AlarmService;
 import com.cetiti.iotpcfgservice.service.ThingModelService;
 import com.cetiti.iotpcfgservice.service.impl.AlarmServiceImpl;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,11 +33,10 @@ import java.util.Map;
  *
  * @author yangshutian
  */
+@Api("告警管理接口")
 @RestController
 @RequestMapping("/alarm")
 public class AlarmController {
-
-    private static final Logger logger = LoggerFactory.getLogger(AlarmController.class);
 
     @Autowired
     private AlarmService alarmService;
@@ -54,6 +53,7 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("获取告警配置列表")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public Result alarmList(JwtAccount account,
             @RequestParam(required = false, defaultValue = "1") int pageNum,
@@ -73,6 +73,7 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("获取设备告警列表")
     @RequestMapping(value = "/deviceAlarmList", method = RequestMethod.GET)
     public Result deviceAlarmList(JwtAccount account,
             @RequestParam(required = false, defaultValue = "1") int pageNum,
@@ -105,11 +106,12 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("新增告警配置")
     @PostMapping(value = "/add")
     public Result addAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
         alarmConfig.setDeviceSn(StringUtils.trimToNull(alarmConfig.getDeviceSn()));
         if(alarmConfig.getDeviceModel() != null){
-            DeviceModel deviceModel = deviceModelService.view(alarmConfig.getDeviceModel());
+            DeviceModel deviceModel = deviceModelService.viewDetail(alarmConfig.getDeviceModel());
             if(deviceModel == null){
                 return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
             }
@@ -124,10 +126,11 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("更新告警配置")
     @PutMapping(value = "/update")
     public Result updateAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
         if(alarmConfig.getDeviceModel() != null){
-            DeviceModel deviceModel = deviceModelService.view(alarmConfig.getDeviceModel());
+            DeviceModel deviceModel = deviceModelService.viewDetail(alarmConfig.getDeviceModel());
             if(deviceModel == null){
                 return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
             }
@@ -141,6 +144,7 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("删除告警配置")
     @DeleteMapping(value = "/delete/{alarmId}")
     public Result deleteAlarm(@PathVariable("alarmId") String alarmId) {
 
@@ -154,6 +158,7 @@ public class AlarmController {
      *
      * @return
      */
+    @ApiOperation("获取最新告警配置")
     @GetMapping(value = "/getAlarmCfg")
     public Result getAlarmCfgInfo(HttpServletResponse response) {
         response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
@@ -164,19 +169,16 @@ public class AlarmController {
     /**
      * 根据设备类型获取告警属性
      *
-     * @return
+     * @return Result
      */
+    @ApiOperation("根据设备类型获取告警属性")
     @GetMapping(value = "/getAttributeListByType/{category}")
     public Result getAttributeListByCategory(@PathVariable String category) {
-        try {
-
-            return Result.ok().put("attributeList", thingModelService.listSensoryThingModelFieldByDeviceModel(null, category));
-        } catch (Exception e) {
-            logger.warn("GetAttributeListByCategory fail, category[" + category
-                    + "].", e);
-            return Result.error("根据设备类型获取告警属性失败！");
+        if(StringUtils.isEmpty(category)){
+            return Result.error("设备型号不能为空");
         }
+        List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(category);
+        return Result.ok().put("attributeList", attributeList);
 
     }
-
 }

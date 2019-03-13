@@ -110,7 +110,7 @@ public class ThingModelServiceImpl implements ThingModelService {
             // -- 打包
             if(modelProcessor.packageAll() == 0){
                 // -- zookeeper 推送通知
-                updateNodeData();
+                //updateNodeData();
             }
         }
 		return failure;
@@ -416,7 +416,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	}
 
 	@Override
-	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
+	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
 
 		return fieldMapper.listSensoryThingModelFieldByDeviceModel(deviceModel);

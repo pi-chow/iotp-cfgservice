@@ -213,9 +213,6 @@ public class ThingModelController {
 		if (StringUtils.isEmpty(model.getStructType())) {
 			return Result.error("设备结构类型为空");
 		}
-		// if (model.getFields() == null || model.getFields().size() == 0) {
-		// return Result.error("需要配置模型包含的字段/属性。");
-		// }
 
 		boolean success = modelService.updateModel(account, model);
 		return success ? Result.ok("更新模型成功") : Result.error("更新模型失败");

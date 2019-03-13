@@ -137,6 +137,11 @@ public class AlarmServiceImpl implements AlarmService {
         return map;
     }
 
+    /**
+     * 设备异常信息统计
+     * @param deviceModel
+     * @return
+     * */
     @Override
     public int alarmCountByModel(String deviceModel) {
         Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModel), "设备型号不能为空！");
@@ -146,8 +151,7 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
     /**
-     * 获取告警列表
-     *
+     * 获取设备告警列表
      * @return
      */
     @Override
@@ -156,6 +160,11 @@ public class AlarmServiceImpl implements AlarmService {
     }
 
 
+    /**
+     * 获取告警配置信息
+     * @param alarmId
+     * @re
+     * */
     @Override
     public DeviceAlarmConfig getAlarmConfig(String alarmId) {
 
