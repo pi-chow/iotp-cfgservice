@@ -110,7 +110,7 @@ public class ThingModelServiceImpl implements ThingModelService {
             // -- 打包
             if(modelProcessor.packageAll() == 0){
                 // -- zookeeper 推送通知
-                //updateNodeData();
+                updateNodeData();
             }
         }
 		return failure;
