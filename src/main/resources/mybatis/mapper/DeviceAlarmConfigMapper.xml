@@ -48,16 +48,11 @@
     </delete>
 
     <insert id="insert" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model,
-          field, conditions,
-          description, alarm_id, alarm_level,
-          create_user, create_time
-          )
-        values (#{deviceModel,jdbcType=VARCHAR},
-          #{field,jdbcType=VARCHAR}, #{conditions,jdbcType=VARCHAR},
-          #{description,jdbcType=VARCHAR}, #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT}
-          #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}
-          )
+        insert into t_device_alarm_config (device_model, field, conditions, description, alarm_id, alarm_level, create_user, create_time)
+        values (#{deviceModel,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
+                #{conditions,jdbcType=VARCHAR},#{description,jdbcType=VARCHAR},
+                #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT},
+                #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})
     </insert>
 
     <update id="updateByPrimaryKeySelective" parameterType="com.cetiti.iotpcfgservice.domain.DeviceAlarmConfig">
