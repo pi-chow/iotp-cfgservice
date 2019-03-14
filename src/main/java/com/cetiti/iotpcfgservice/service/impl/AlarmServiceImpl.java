@@ -28,7 +28,6 @@ import java.util.Map;
  *
  * @author yangshutian
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = AlarmService.class)
 @Service
 public class AlarmServiceImpl implements AlarmService {
 
