@@ -116,6 +116,10 @@ public class AlarmController {
                 return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
             }
         }
+
+        if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
+            return Result.error("描述字段包含空格");
+        }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
         return alarmId != null ? Result.ok().put("alarmId", alarmId) : Result
                 .error("新增告警失败！");
@@ -135,6 +139,10 @@ public class AlarmController {
                 return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
             }
         }
+        if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
+            return Result.error("描述字段包含空格");
+        }
+
         boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         return success ? Result.ok() : Result.error("告警配置更新失败");
     }
