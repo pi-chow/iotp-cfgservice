@@ -3,8 +3,8 @@ package com.cetiti.iotp.cfgservice.service;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.ThingModelField;
 import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author zhouliyu
  */
-public interface ThingModelService {
+public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingModelService {
 
 
     /**
@@ -34,12 +34,6 @@ public interface ThingModelService {
      * @param account 登录账号
      */
     ThingModelDef modelViewById(String modelId, JwtAccount account);
-
-    /**
-     * 通过设备型号获取物模型数量
-     * @param account 账户。
-     */
-    int thingModelCount(String deviceModel, JwtAccount account);
 
     /**
      * 新增模型
@@ -69,12 +63,6 @@ public interface ThingModelService {
      * @param account 账户类型。
      */
     boolean updateModel(JwtAccount account, ThingModelDef message);
-
-    /**
-     * 修改模型
-     * @param account 账户类型。
-     */
-    boolean updateModelName(JwtAccount account, String deviceModelName, String deviceModel);
 
     /**
      * 删除模型
@@ -116,13 +104,6 @@ public interface ThingModelService {
      */
     List<String> getUsableStoreType(String storeType);
 
-    /**
-     * 根据设备型号获取物模型感知属性。
-     *
-     * @return 消息存储类型。
-     */
-    List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel);
-    
     /**
      * 物模型模板分页。
      * 

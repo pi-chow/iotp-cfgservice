@@ -1,6 +1,5 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
-
 import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
 import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.DataTypeStoreTypeRelation;
@@ -10,17 +9,17 @@ import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
+import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.ThingModelField;
-import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
@@ -48,13 +47,13 @@ import java.util.stream.Collectors;
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-    private static final String PATH = "/iot_cfg_publish";
+	private static final String PATH = "/iot_cfg_publish";
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
 
 	@Reference
-    private DeviceModelService deviceModelService;
+	private DeviceModelService deviceModelService;
 
 	@Autowired
 	private ThingModelFieldMapper fieldMapper;
@@ -68,7 +67,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private CfgZkClient cfgZkClient;
 
-
 	/**
 	 * 发布所有的物模型。
 	 *
@@ -79,21 +77,21 @@ public class ThingModelServiceImpl implements ThingModelService {
 		logger.debug("Publis all model, account[{}].", account);
 
 		List<ThingModelDef> modelList = modelDefMapper.modelList(DevUser.isDeveloper(account), null);
-        List<ThingModelDef> failure = Lists.newArrayList();
+		List<ThingModelDef> failure = Lists.newArrayList();
 
 		if (modelList == null || modelList.size() == 0) {
 			return Lists.newArrayList();
 		}
-		//物模型发布
+		// 物模型发布
 		List<ThingModelDef> thingModelList = modelList.stream().filter(e -> {
 			return e.getThingModelType() != null
 					&& !e.getThingModelType().equalsIgnoreCase(ThingDataTypeEnum.STRUT.getValue());
 		}).collect(Collectors.toList());
 
-		if(thingModelList.size()!=0){
-            //-- 清空
-            modelProcessor.clearAllTarget();
-        }
+		if (thingModelList.size() != 0) {
+			// -- 清空
+			modelProcessor.clearAllTarget();
+		}
 
 		for (ThingModelDef model : thingModelList) {
 			try {
@@ -103,16 +101,16 @@ public class ThingModelServiceImpl implements ThingModelService {
 				failure.add(model);
 			}
 		}
-        //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
-        if (failure.size() > 0) {
-            return failure;
-        }else {
-            // -- 打包
-            if(modelProcessor.packageAll() == 0){
-                // -- zookeeper 推送通知
-                updateNodeData();
-            }
-        }
+		// 如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
+		if (failure.size() > 0) {
+			return failure;
+		} else {
+			// -- 打包
+			if (modelProcessor.packageAll() == 0) {
+				// -- zookeeper 推送通知
+				updateNodeData();
+			}
+		}
 		return failure;
 	}
 
@@ -216,16 +214,15 @@ public class ThingModelServiceImpl implements ThingModelService {
 		List<ThingModelDef> existModelDefs = modelDefMapper
 				.modelViewByDeviceModelIdAndModelType(model.getDeviceModelId(), model.getThingModelType());
 
-		
 		if (existModelDefs != null && existModelDefs.size() > 1
 				&& !ThingDataTypeEnum.allowMultiRecord(model.getThingModelType())) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_INVALID);
 		}
-		
-		// --  名称、对应的设备id、类别一致的话，存在。
+
+		// -- 名称、对应的设备id、类别一致的话，存在。
 		for (ThingModelDef def : existModelDefs) {
-			if (StringUtils.equalsIgnoreCase(def.getName(), model.getName()) 
-					&& StringUtils.equalsIgnoreCase(def.getDeviceModelId(), model.getDeviceModelId()) 
+			if (StringUtils.equalsIgnoreCase(def.getName(), model.getName())
+					&& StringUtils.equalsIgnoreCase(def.getDeviceModelId(), model.getDeviceModelId())
 					&& StringUtils.equalsIgnoreCase(def.getThingModelType(), model.getThingModelType())) {
 				throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
 			}
@@ -297,7 +294,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelName));
 		Preconditions.checkArgument(account != null);
-		Map<String,Object> args = new HashMap<>();
+		Map<String, Object> args = new HashMap<>();
 		args.put("deviceModelName", deviceModelName);
 		args.put("deviceModel", deviceModel);
 		args.put("modifyUser", account.getUserId());
@@ -415,8 +412,11 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}).collect(Collectors.toList());
 	}
 
+	/**
+	 * TODO
+	 */
 	@Override
-	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel) {
+	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
 
 		return fieldMapper.listSensoryThingModelFieldByDeviceModel(deviceModel);
@@ -429,7 +429,8 @@ public class ThingModelServiceImpl implements ThingModelService {
 	}
 
 	@Override
-	public PageInfo<ThingModelDef> templateModelView(JwtAccount account, String deviceModel, String deviceModelName, int currentPage, int pageSize) {
+	public PageInfo<ThingModelDef> templateModelView(JwtAccount account, String deviceModel, String deviceModelName,
+			int currentPage, int pageSize) {
 
 		Map<String, Object> paras = Maps.newHashMap();
 
@@ -469,25 +470,24 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 	}
 
-
 	/**
-     * zookeeper 设备协议发布生成node
-     * */
+	 * zookeeper 设备协议发布生成node
+	 */
 	private void updateNodeData() {
-        String currentTime = String.valueOf(System.currentTimeMillis());
-        try {
-            if(!cfgZkClient.isConnect()){
-                throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
-            }
+		String currentTime = String.valueOf(System.currentTimeMillis());
+		try {
+			if (!cfgZkClient.isConnect()) {
+				throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
+			}
 
-            if(cfgZkClient.exists(PATH) == null){
-                cfgZkClient.createNode(PATH, currentTime.getBytes());
-            }else {
-                cfgZkClient.setData(PATH,currentTime.getBytes());
-            }
-        } catch (KeeperException | InterruptedException exception) {
-            logger.error("zookeeper error: " + exception);
-        }
-    }
+			if (cfgZkClient.exists(PATH) == null) {
+				cfgZkClient.createNode(PATH, currentTime.getBytes());
+			} else {
+				cfgZkClient.setData(PATH, currentTime.getBytes());
+			}
+		} catch (KeeperException | InterruptedException exception) {
+			logger.error("zookeeper error: " + exception);
+		}
+	}
 
 }

@@ -7,9 +7,9 @@ import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.common.result.Result;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
-import com.cetiti.iotp.cfgservice.domain.ThingModelField;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import com.cetiti.iotp.cfgservice.service.impl.AlarmServiceImpl;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -185,7 +185,7 @@ public class AlarmController {
         if(StringUtils.isEmpty(category)){
             return Result.error("设备型号不能为空");
         }
-        List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(category);
+        List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(null, category);
         return Result.ok().put("attributeList", attributeList);
 
     }
