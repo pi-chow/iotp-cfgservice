@@ -45,10 +45,6 @@ public class DateUtils {
         return calendar.getTime();
     }
 
-    public static void main(String[] args) {
-        todayLastDate();
-    }
-
     /**
      * 得到某天的00点00分00秒的unix时间。
      *
