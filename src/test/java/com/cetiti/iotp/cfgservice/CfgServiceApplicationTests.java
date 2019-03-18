@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class IotpCfgserviceApplicationTests {
+public class CfgServiceApplicationTests {
 
 	@Test
 	public void contextLoads() {
