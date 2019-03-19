@@ -40,7 +40,7 @@ public interface ThingModelDefMapper {
 	/**
 	 * 通过型号查询数量。
 	 */
-	int thingModelCount(String deviceModel);
+	int thingModelCount(@Param("userId") String userId, @Param("deviceModel") String deviceModel);
 
 	/**
 	 * 新增设备模型。

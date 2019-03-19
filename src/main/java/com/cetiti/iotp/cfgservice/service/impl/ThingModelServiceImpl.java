@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  *
  * @author zhouliyu
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = ThingModelService.class)
+@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class)
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 
@@ -120,7 +120,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * 根据型号查询对应的模型列表。
 	 */
 	@Override
-	public List<ThingModelDef> modelListByDeviceModelId(String deviceModelId, JwtAccount account) {
+	public List<ThingModelDef> modelListByDeviceModelId(String deviceModelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModelId), "设备编号不能为空！");
 		List<ThingModelDef> modelList = modelDefMapper.modelListByDeviceModelId(deviceModelId);
 		return modelList;
@@ -135,7 +135,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * @return
 	 */
 	@Override
-	public ThingModelDef modelViewById(String modelId, JwtAccount account) {
+	public ThingModelDef modelViewById(String modelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		return modelDefMapper.modelViewById(modelId);
 	}
@@ -143,7 +143,8 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Override
 	public int thingModelCount(String deviceModel, JwtAccount account) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModel), "设备型号不能为空！");
-		return modelDefMapper.thingModelCount(deviceModel);
+		String userId = DevUser.isDeveloper(account);
+		return modelDefMapper.thingModelCount(userId, deviceModel);
 	}
 
 	/**
@@ -159,7 +160,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNotBlank(modelTemplateId));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelId));
 
-		List<ThingModelDef> existModelDefs = this.modelListByDeviceModelId(deviceModelId, null);
+		List<ThingModelDef> existModelDefs = this.modelListByDeviceModelId(deviceModelId);
 		if (existModelDefs != null && existModelDefs.size() > 0) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
 		}
@@ -211,7 +212,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
 		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
 		Preconditions.checkArgument(ThingDataStrutTypeEnum.check(model.getStructType()), "结构类型不存在");
-		Preconditions.checkArgument(account != null, "登录用户信息不存在。");
 
 		List<ThingModelDef> existModelDefs = modelDefMapper
 				.modelViewByDeviceModelIdAndModelType(model.getDeviceModelId(), model.getThingModelType());
@@ -243,7 +243,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		List<ThingModelField> fieldList = model.getFields();
 		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(null, model.getThingModelId(), fieldList);
+			fieldListAdd(model.getThingModelId(), fieldList);
 		}
 		return model.getThingModelId();
 	}
@@ -280,7 +280,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
 
 		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(null, model.getThingModelId(), fieldList);
+			fieldListAdd(model.getThingModelId(), fieldList);
 		}
 		return c > 0;
 	}
@@ -313,7 +313,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 */
 	@Transactional
 	@Override
-	public boolean deleteModel(JwtAccount account, String modelId) {
+	public boolean deleteModel(String modelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		int c = modelDefMapper.modelDelete(modelId);
 		delFieldList(modelId);
@@ -328,9 +328,10 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * 
 	 * @return
 	 */
-	public boolean deleteTemplate(JwtAccount account, String templateId) {
+	@Override
+	public boolean deleteTemplate(String templateId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(templateId));
-		List<ThingModelDef> thingModelDefs = modelListByDeviceModelId(templateId, null);
+		List<ThingModelDef> thingModelDefs = modelListByDeviceModelId(templateId);
 		if (thingModelDefs == null || thingModelDefs.size() == 0) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_MISS);
 		}
@@ -348,7 +349,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 */
 	@Transactional
 	@Override
-	public boolean fieldListAdd(JwtAccount account, String modelId, List<ThingModelField> fieldList) {
+	public boolean fieldListAdd(String modelId, List<ThingModelField> fieldList) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		Preconditions.checkArgument(fieldList != null && fieldList.size() > 0);
 		for (ThingModelField field : fieldList) {
@@ -416,10 +417,11 @@ public class ThingModelServiceImpl implements ThingModelService {
 	}
 
 	@Override
-	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel) {
+	public List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        String userId = DevUser.isDeveloper(account);
 
-		return fieldMapper.listSensoryThingModelFieldByDeviceModel(deviceModel);
+		return fieldMapper.listSensoryThingModelFieldByDeviceModel(userId, deviceModel);
 	}
 
 	@Override

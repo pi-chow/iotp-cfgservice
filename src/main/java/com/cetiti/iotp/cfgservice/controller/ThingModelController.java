@@ -42,26 +42,24 @@ public class ThingModelController {
 
 	/**
 	 * 根据设备编号获取模型列表
-	 * @param account TODO
 	 */
 	@ApiOperation(value = "根据设备编号获取模型列表")
 	@GetMapping(value = "/list/{deviceModelId}")
-	public Result modelList(JwtAccount account, @PathVariable("deviceModelId") String deviceId) {
-		List<ThingModelDef> modelList = modelService.modelListByDeviceModelId(deviceId, account);
+	public Result modelList(@PathVariable("deviceModelId") String deviceId) {
+		List<ThingModelDef> modelList = modelService.modelListByDeviceModelId(deviceId);
 		return Result.ok().put("modelList", modelList);
 	}
 
 	/**
 	 * 根据模型编号获取模型
-	 * @param account TODO
 	 * @param modelDefId
 	 *
 	 * @return
 	 */
 	@ApiOperation(value = "根据模型编号获取模型")
 	@GetMapping(value = "/{thingModelId}")
-	public Result modelViewById(JwtAccount account, @PathVariable("thingModelId") String modelDefId) {
-		ThingModelDef model = modelService.modelViewById(modelDefId, account);
+	public Result modelViewById(@PathVariable("thingModelId") String modelDefId) {
+		ThingModelDef model = modelService.modelViewById(modelDefId);
 		return Result.ok().put("model", model);
 	}
 
@@ -189,8 +187,8 @@ public class ThingModelController {
 	 * @return
 	 */
 	@DeleteMapping(value = "/template/del/{templateId}")
-	public Result templateModelDelete(JwtAccount account, @PathVariable("templateId") String templateId) {
-		boolean success = modelService.deleteTemplate(account, templateId);
+	public Result templateModelDelete(@PathVariable("templateId") String templateId) {
+		boolean success = modelService.deleteTemplate(templateId);
 		return success ? Result.ok("删除模板成功") : Result.error("删除模板失败");
 
 	}
@@ -220,13 +218,13 @@ public class ThingModelController {
 
 	/**
 	 * 删除模型
-	 * @param account TODO
+
 	 */
 	@ApiOperation(value = "删除模型")
 	@DeleteMapping(value = "/delete/{thingModelId}")
-	public Result modelDelete(JwtAccount account, @PathVariable("thingModelId") String modelId) {
+	public Result modelDelete(@PathVariable("thingModelId") String modelId) {
 		modelProcessor.deleteModelFile(modelId);
-		boolean success = modelService.deleteModel(account, modelId);
+		boolean success = modelService.deleteModel(modelId);
 		return success ? Result.ok("删除模型成功") : Result.error("删除模型失败");
 	}
 
