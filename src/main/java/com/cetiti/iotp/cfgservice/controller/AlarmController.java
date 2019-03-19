@@ -1,8 +1,6 @@
 package com.cetiti.iotp.cfgservice.controller;
 
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.common.result.Result;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
@@ -11,6 +9,8 @@ import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import com.cetiti.iotp.cfgservice.service.impl.AlarmServiceImpl;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
+import com.cetiti.iotp.itf.platformservice.DeviceModelService;
+import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;

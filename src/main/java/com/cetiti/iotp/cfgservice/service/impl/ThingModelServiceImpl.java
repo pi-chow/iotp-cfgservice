@@ -1,8 +1,6 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.DataTypeStoreTypeRelation;
 import com.cetiti.ddapv2.iotplatform.common.StoreTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
@@ -21,6 +19,8 @@ import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
+import com.cetiti.iotp.itf.platformservice.DeviceModelService;
+import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
