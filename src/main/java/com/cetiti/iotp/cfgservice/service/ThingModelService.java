@@ -10,7 +10,7 @@ import com.github.pagehelper.PageInfo;
 import java.util.List;
 
 /**
- * 模型服务
+ * 设备协议模型服务
  *
  * @author zhouliyu
  */
@@ -18,28 +18,36 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
 
 
     /**
-     * 发布所有的物模型。
+     * 发布所有物模型。
      * @param account 用户账号。
      */
     List<ThingModelDef> allModelPublish(JwtAccount account);
 
     /**
-     * 根据设备型号编号获取模型列表
-     * @param account 设备账户。
+     * 获取模型列表
+     * @param deviceModelId 设备型号id
      */
-    List<ThingModelDef> modelListByDeviceModelId(String deviceModelId, JwtAccount account);
+    List<ThingModelDef> modelListByDeviceModelId(String deviceModelId);
 
     /**
-     * 通过模型编号获取模型
-     * @param account 登录账号
+     * 获取模型
+     * @param modelId
      */
-    ThingModelDef modelViewById(String modelId, JwtAccount account);
+    ThingModelDef modelViewById(String modelId);
+
+    /**
+     * 获取物模型数量
+     * @param account 账户
+     * @param deviceModel 设备型号
+     */
+    int thingModelCount(String deviceModel, JwtAccount account);
 
     /**
      * 新增模型
-     * @param account 账户类型。
+     * @param account 账户类型
+     * @param thingModelDef 物模型字段
      */
-    String addModel(ThingModelDef message, JwtAccount account);
+    String addModel(ThingModelDef thingModelDef, JwtAccount account);
     
     /**
 	 * 从一个模板里面复制一个物模型.
@@ -62,27 +70,33 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
      * 修改模型
      * @param account 账户类型。
      */
-    boolean updateModel(JwtAccount account, ThingModelDef message);
+    boolean updateModel(JwtAccount account, ThingModelDef thingModelDef);
+
+    /**
+     * 修改模型名称
+     * @param account 账户类型。
+     */
+    boolean updateModelName(JwtAccount account, String deviceModelName, String deviceModel);
 
     /**
      * 删除模型
-     * @param account 账户类型。
+     * @param thingModelId 模型id。
      */
-    boolean deleteModel(JwtAccount account, String thingModelId);
+    boolean deleteModel(String thingModelId);
 
     /**
      * 新增模型字段列表
-     * @param account 账号。
+     * @param thingModelId 模型id。
      */
-    boolean fieldListAdd(JwtAccount account, String thingModelId, List<ThingModelField> fieldList);
+    boolean fieldListAdd(String thingModelId, List<ThingModelField> fieldList);
 
     /**
-     * 获取模型类型
+     * 获取模型协议类型
      */
     List<String> strutType();
 
     /**
-     * 获取模型存储类型。
+     * 获取模型存储类型
      *
      * @return 消息存储类型。
      */
@@ -105,6 +119,13 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
     List<String> getUsableStoreType(String storeType);
 
     /**
+     * 根据设备型号获取物模型感知属性。
+     *
+     * @return 消息存储类型。
+     */
+    List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel);
+    
+    /**
      * 物模型模板分页。
      * 
      * @param currentPage
@@ -115,12 +136,10 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
     
     /**
      * 删除一个模板.
-     * @param account 用户账户。
-     * 
      * @param templateId 模板ID即为设备模型标识.
      * 
      * @return
      */
-    boolean deleteTemplate(JwtAccount account, String templateId);
+    boolean deleteTemplate(String templateId);
 
 }

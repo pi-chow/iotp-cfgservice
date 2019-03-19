@@ -1,5 +1,6 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
+
 import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
 import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.DataTypeStoreTypeRelation;
@@ -9,12 +10,12 @@ import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
+import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
@@ -42,18 +43,18 @@ import java.util.stream.Collectors;
  *
  * @author zhouliyu
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = ThingModelService.class)
+@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class)
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-	private static final String PATH = "/iot_cfg_publish";
+    private static final String PATH = "/iot_cfg_publish";
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
 
 	@Reference
-	private DeviceModelService deviceModelService;
+    private DeviceModelService deviceModelService;
 
 	@Autowired
 	private ThingModelFieldMapper fieldMapper;
@@ -67,6 +68,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private CfgZkClient cfgZkClient;
 
+
 	/**
 	 * 发布所有的物模型。
 	 *
@@ -77,21 +79,21 @@ public class ThingModelServiceImpl implements ThingModelService {
 		logger.debug("Publis all model, account[{}].", account);
 
 		List<ThingModelDef> modelList = modelDefMapper.modelList(DevUser.isDeveloper(account), null);
-		List<ThingModelDef> failure = Lists.newArrayList();
+        List<ThingModelDef> failure = Lists.newArrayList();
 
 		if (modelList == null || modelList.size() == 0) {
 			return Lists.newArrayList();
 		}
-		// 物模型发布
+		//物模型发布
 		List<ThingModelDef> thingModelList = modelList.stream().filter(e -> {
 			return e.getThingModelType() != null
 					&& !e.getThingModelType().equalsIgnoreCase(ThingDataTypeEnum.STRUT.getValue());
 		}).collect(Collectors.toList());
 
-		if (thingModelList.size() != 0) {
-			// -- 清空
-			modelProcessor.clearAllTarget();
-		}
+		if(thingModelList.size()!=0){
+            //-- 清空
+            modelProcessor.clearAllTarget();
+        }
 
 		for (ThingModelDef model : thingModelList) {
 			try {
@@ -101,16 +103,16 @@ public class ThingModelServiceImpl implements ThingModelService {
 				failure.add(model);
 			}
 		}
-		// 如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
-		if (failure.size() > 0) {
-			return failure;
-		} else {
-			// -- 打包
-			if (modelProcessor.packageAll() == 0) {
-				// -- zookeeper 推送通知
-				updateNodeData();
-			}
-		}
+        //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
+        if (failure.size() > 0) {
+            return failure;
+        }else {
+            // -- 打包
+            if(modelProcessor.packageAll() == 0){
+                // -- zookeeper 推送通知
+                updateNodeData();
+            }
+        }
 		return failure;
 	}
 
@@ -118,7 +120,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * 根据型号查询对应的模型列表。
 	 */
 	@Override
-	public List<ThingModelDef> modelListByDeviceModelId(String deviceModelId, JwtAccount account) {
+	public List<ThingModelDef> modelListByDeviceModelId(String deviceModelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModelId), "设备编号不能为空！");
 		List<ThingModelDef> modelList = modelDefMapper.modelListByDeviceModelId(deviceModelId);
 		return modelList;
@@ -133,7 +135,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * @return
 	 */
 	@Override
-	public ThingModelDef modelViewById(String modelId, JwtAccount account) {
+	public ThingModelDef modelViewById(String modelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		return modelDefMapper.modelViewById(modelId);
 	}
@@ -141,7 +143,8 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Override
 	public int thingModelCount(String deviceModel, JwtAccount account) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModel), "设备型号不能为空！");
-		return modelDefMapper.thingModelCount(deviceModel);
+		String userId = DevUser.isDeveloper(account);
+		return modelDefMapper.thingModelCount(userId, deviceModel);
 	}
 
 	/**
@@ -157,7 +160,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNotBlank(modelTemplateId));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelId));
 
-		List<ThingModelDef> existModelDefs = this.modelListByDeviceModelId(deviceModelId, null);
+		List<ThingModelDef> existModelDefs = this.modelListByDeviceModelId(deviceModelId);
 		if (existModelDefs != null && existModelDefs.size() > 0) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
 		}
@@ -209,20 +212,20 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
 		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
 		Preconditions.checkArgument(ThingDataStrutTypeEnum.check(model.getStructType()), "结构类型不存在");
-		Preconditions.checkArgument(account != null, "登录用户信息不存在。");
 
 		List<ThingModelDef> existModelDefs = modelDefMapper
 				.modelViewByDeviceModelIdAndModelType(model.getDeviceModelId(), model.getThingModelType());
 
+		
 		if (existModelDefs != null && existModelDefs.size() > 1
 				&& !ThingDataTypeEnum.allowMultiRecord(model.getThingModelType())) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_INVALID);
 		}
-
-		// -- 名称、对应的设备id、类别一致的话，存在。
+		
+		// --  名称、对应的设备id、类别一致的话，存在。
 		for (ThingModelDef def : existModelDefs) {
-			if (StringUtils.equalsIgnoreCase(def.getName(), model.getName())
-					&& StringUtils.equalsIgnoreCase(def.getDeviceModelId(), model.getDeviceModelId())
+			if (StringUtils.equalsIgnoreCase(def.getName(), model.getName()) 
+					&& StringUtils.equalsIgnoreCase(def.getDeviceModelId(), model.getDeviceModelId()) 
 					&& StringUtils.equalsIgnoreCase(def.getThingModelType(), model.getThingModelType())) {
 				throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
 			}
@@ -240,7 +243,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		List<ThingModelField> fieldList = model.getFields();
 		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(null, model.getThingModelId(), fieldList);
+			fieldListAdd(model.getThingModelId(), fieldList);
 		}
 		return model.getThingModelId();
 	}
@@ -277,7 +280,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
 
 		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(null, model.getThingModelId(), fieldList);
+			fieldListAdd(model.getThingModelId(), fieldList);
 		}
 		return c > 0;
 	}
@@ -294,7 +297,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelName));
 		Preconditions.checkArgument(account != null);
-		Map<String, Object> args = new HashMap<>();
+		Map<String,Object> args = new HashMap<>();
 		args.put("deviceModelName", deviceModelName);
 		args.put("deviceModel", deviceModel);
 		args.put("modifyUser", account.getUserId());
@@ -310,7 +313,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 */
 	@Transactional
 	@Override
-	public boolean deleteModel(JwtAccount account, String modelId) {
+	public boolean deleteModel(String modelId) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		int c = modelDefMapper.modelDelete(modelId);
 		delFieldList(modelId);
@@ -325,9 +328,10 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 * 
 	 * @return
 	 */
-	public boolean deleteTemplate(JwtAccount account, String templateId) {
+	@Override
+	public boolean deleteTemplate(String templateId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(templateId));
-		List<ThingModelDef> thingModelDefs = modelListByDeviceModelId(templateId, null);
+		List<ThingModelDef> thingModelDefs = modelListByDeviceModelId(templateId);
 		if (thingModelDefs == null || thingModelDefs.size() == 0) {
 			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_MISS);
 		}
@@ -345,7 +349,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	 */
 	@Transactional
 	@Override
-	public boolean fieldListAdd(JwtAccount account, String modelId, List<ThingModelField> fieldList) {
+	public boolean fieldListAdd(String modelId, List<ThingModelField> fieldList) {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
 		Preconditions.checkArgument(fieldList != null && fieldList.size() > 0);
 		for (ThingModelField field : fieldList) {
@@ -412,14 +416,12 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}).collect(Collectors.toList());
 	}
 
-	/**
-	 * TODO
-	 */
 	@Override
-	public List<ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
+	public List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        String userId = DevUser.isDeveloper(account);
 
-		return fieldMapper.listSensoryThingModelFieldByDeviceModel(deviceModel);
+		return fieldMapper.listSensoryThingModelFieldByDeviceModel(userId, deviceModel);
 	}
 
 	@Override
@@ -429,8 +431,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	}
 
 	@Override
-	public PageInfo<ThingModelDef> templateModelView(JwtAccount account, String deviceModel, String deviceModelName,
-			int currentPage, int pageSize) {
+	public PageInfo<ThingModelDef> templateModelView(JwtAccount account, String deviceModel, String deviceModelName, int currentPage, int pageSize) {
 
 		Map<String, Object> paras = Maps.newHashMap();
 
@@ -470,24 +471,25 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 	}
 
-	/**
-	 * zookeeper 设备协议发布生成node
-	 */
-	private void updateNodeData() {
-		String currentTime = String.valueOf(System.currentTimeMillis());
-		try {
-			if (!cfgZkClient.isConnect()) {
-				throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
-			}
 
-			if (cfgZkClient.exists(PATH) == null) {
-				cfgZkClient.createNode(PATH, currentTime.getBytes());
-			} else {
-				cfgZkClient.setData(PATH, currentTime.getBytes());
-			}
-		} catch (KeeperException | InterruptedException exception) {
-			logger.error("zookeeper error: " + exception);
-		}
-	}
+	/**
+     * zookeeper 设备协议发布生成node
+     * */
+	private void updateNodeData() {
+        String currentTime = String.valueOf(System.currentTimeMillis());
+        try {
+            if(!cfgZkClient.isConnect()){
+                throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
+            }
+
+            if(cfgZkClient.exists(PATH) == null){
+                cfgZkClient.createNode(PATH, currentTime.getBytes());
+            }else {
+                cfgZkClient.setData(PATH,currentTime.getBytes());
+            }
+        } catch (KeeperException | InterruptedException exception) {
+            logger.error("zookeeper error: " + exception);
+        }
+    }
 
 }

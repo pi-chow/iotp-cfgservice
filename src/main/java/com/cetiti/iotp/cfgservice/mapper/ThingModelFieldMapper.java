@@ -1,6 +1,7 @@
 package com.cetiti.iotp.cfgservice.mapper;
 
 
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
@@ -39,5 +40,5 @@ public interface ThingModelFieldMapper {
     /**
      * 根据设备型号获取物模型感知属性。
      */
-    List<ThingModelField> listSensoryThingModelFieldByDeviceModel(String deviceModel);
+    List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(@Param("userId") String userId, @Param("deviceModel") String deviceModel);
 }

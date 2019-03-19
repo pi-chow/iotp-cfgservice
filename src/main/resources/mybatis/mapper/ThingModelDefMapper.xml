@@ -89,10 +89,17 @@
 		FROM t_thing_model WHERE thing_model_id = #{thingModelId}
 	</select>
 
-	<select id="thingModelCount" parameterType="java.lang.String"
+	<select id="thingModelCount"
 		resultType="Integer">
-		SELECT COUNT(0) FROM t_thing_model WHERE device_model =
-		#{deviceModel}
+		SELECT COUNT(0) FROM t_thing_model
+		<where>
+			<if test="userId != null">
+				AND create_user = #{userId}
+			</if>
+			<if test="deviceModel != null">
+				AND device_model = #{deviceModel}
+			</if>
+		</where>
 	</select>
 
 	<select id="modelViewByDeviceModelIdAndModelType" resultMap="ThingModel">
