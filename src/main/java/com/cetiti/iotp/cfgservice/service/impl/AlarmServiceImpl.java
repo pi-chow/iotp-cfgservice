@@ -1,11 +1,11 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
 import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
-import com.cetiti.iotp.cfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.google.common.base.Preconditions;
@@ -35,9 +35,6 @@ public class AlarmServiceImpl implements AlarmService {
     private Logger logger = LoggerFactory.getLogger(AlarmServiceImpl.class);
 
     @Autowired
-    private UniqueIdGenerator uniqueIdGenerator;
-
-    @Autowired
     private AlarmMapper alarmMapper;
 
     @Autowired
@@ -65,7 +62,7 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig record) {
         setLastModified();
-        String alarmId = uniqueIdGenerator.generateAlarmId();
+        String alarmId = GenerationSequenceUtil.uuid();
         record.setAlarmId(alarmId);
         record.setCreateTime(new Date());
         record.setCreateUser(account.getUserId());

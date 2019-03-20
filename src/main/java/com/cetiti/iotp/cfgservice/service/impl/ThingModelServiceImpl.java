@@ -7,9 +7,9 @@ import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
+import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
-import com.cetiti.iotp.cfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
@@ -62,8 +62,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private ThingModelProcessor modelProcessor;
 
-	@Autowired
-	private UniqueIdGenerator uniqueIdGenerator;
 
 	@Autowired
 	private CfgZkClient cfgZkClient;
@@ -188,7 +186,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		// -- 修改为新型号Id。
 		for (ThingModelDef templateThingModelDef : templateThingModelDefs) {
-			templateThingModelDef.setThingModelId(uniqueIdGenerator.generateModelId());
+			templateThingModelDef.setThingModelId(GenerationSequenceUtil.uuid());
 			templateThingModelDef.setDeviceModel(deviceModel.deviceModel);
 			templateThingModelDef.setDeviceModelName(deviceModel.deviceModelName);
 			templateThingModelDef.setDeviceModelId(deviceModel.deviceModelId);
@@ -231,7 +229,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 			}
 		}
 
-		model.setThingModelId(uniqueIdGenerator.generateModelId());
+		model.setThingModelId(GenerationSequenceUtil.uuid());
 		model.setCreateTime(new Date());
 		model.setModifyTime(new Date());
 		model.setCreateUser(account.getUserId());
