@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  *
  * @author zhouliyu
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class)
+@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class, timeout = 6000)
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 

@@ -28,7 +28,7 @@ import java.util.Map;
  *
  * @author yangshutian
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.AlarmService.class)
+@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.AlarmService.class, timeout = 6000)
 @Service
 public class AlarmServiceImpl implements AlarmService {
 
