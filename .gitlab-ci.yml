@@ -1,29 +1,32 @@
+image: registry.d.com/cetiti/maven:3.5.2-jdk-8
+
+variables:
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  
 stages:
   - build
   - deploy
 
 cache:
   paths:
-    - .m2/
+    - .m2/repository/
 
 build:
-  image: registry.d.com/cetiti/maven:3.5.2-jdk-8
   stage: build
   script: mvn clean package
   artifacts:
     paths:
-      - target/iotp-cfgservice.jar
-  only:
-    - dev
+      - target/iotp-assetservice-cli.zip
 
-deploy:
-  image: ubuntu:18.04
+deploy:dev:
   stage: deploy
   before_script:
    ##
    ## Install ssh-agent if not already installed, it is required by Docker.
    ## (change apt-get to yum if you use an RPM-based image)
    ##
+   
    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
 
    ##
@@ -59,10 +62,57 @@ deploy:
    - ssh-keyscan $DEV_SERVER_IP >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - scp scripts/bin/* root@$DEV_SERVER_IP:$SPRING_BOOT_PATH
-   - ssh root@$DEV_SERVER_IP "sh $SPRING_BOOT_PATH/stop.sh"
-   - scp target/iotp-cfgservice.jar root@$DEV_SERVER_IP:$SPRING_BOOT_PATH
-   #- rsync -r --delete config/* root@$DEV_SERVER_IP:$SPRING_BOOT_PATH/config
-   - ssh root@$DEV_SERVER_IP "sh $SPRING_BOOT_PATH/start.sh"
-  only:
+   - scp target/iotp-assetservice-cli.zip root@$DEV_SERVER_IP:$PROJECT_PATH
+   - ssh root@$DEV_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
+   - ssh root@$DEV_SERVER_IP "unzip -o $PROJECT_PATHiotp-assetservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+  only: 
     - dev
+
+deploy:demo:
+  stage: deploy
+  before_script:
+   ##
+   ## Install ssh-agent if not already installed, it is required by Docker.
+   ## (change apt-get to yum if you use an RPM-based image)
+   ##
+   
+   - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+
+   ##
+   ## Run ssh-agent (inside the build environment)
+   ##
+   - eval $(ssh-agent -s)
+
+   ##
+   ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+   ## We're using tr to fix line endings which makes ed25519 keys work
+   ## without extra base64 encoding.
+   ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+   ##
+   - echo "$DEMO_SERVER_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
+   ##
+   ## Create the SSH directory and give it the right permissions
+   ##
+   - mkdir -p ~/.ssh
+   - chmod 700 ~/.ssh
+
+   ## Assuming you created the SSH_KNOWN_HOSTS variable, uncomment the
+   ## following two lines.
+   ##
+   #- echo "$DEV_SERVER_IP" > ~/.ssh/known_hosts
+   #- chmod 644 ~/.ssh/known_hosts
+
+   ##
+   ## Alternatively, use ssh-keyscan to scan the keys of your private server.
+   ## Replace example.com with your private server's domain name. Repeat that
+   ## command if you have more than one server to connect to.
+   ##
+   - ssh-keyscan $DEMO_SERVER_IP >> ~/.ssh/known_hosts
+   - chmod 644 ~/.ssh/known_hosts
+  script:
+   - scp target/iotp-assetservice-cli.zip root@$DEMO_SERVER_IP:$PROJECT_PATH
+   - ssh root@$DEMO_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
+   - ssh root@$DEMO_SERVER_IP "unzip -o $PROJECT_PATHiotp-assetservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+  only: 
+    - master
