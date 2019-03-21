@@ -1,112 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>iot-backend</artifactId>
-        <groupId>com.cetiti</groupId>
-        <version>1.0</version>
-    </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.cetiti.iotp</groupId>
+		<artifactId>iotp-parent</artifactId>
+		<version>0.8.0-SNAPSHOT</version>
+	</parent>
 
 	<artifactId>iotp-cfgservice</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.8.0-SNAPSHOT</version>
 	<description>Configuration Management Service</description>
 
-	<properties>
-        <curator.version>2.9.1</curator.version>
-		<dubbo.version>2.7.0</dubbo.version>
-        <swagger.version>2.8.0</swagger.version>
-	</properties>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://maven.d.com/repository/public/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 	<dependencies>
 
-        <!--IoTP公共依赖包-->
-        <dependency>
-			<groupId>com.cetiti.ddapv2</groupId>
-			<artifactId>iotplatform-common</artifactId>
-		</dependency>
-
-        <!--SpringBoot-->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-tomcat</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jetty</artifactId>
-		</dependency>
-
-        <!--MySQL-->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-            <version>5.1.43</version>
-		</dependency>
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.pagehelper</groupId>
 			<artifactId>pagehelper-spring-boot-starter</artifactId>
 			<version>1.2.3</version>
 		</dependency>
 
-        <!--swagger-->
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-            <version>${swagger.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-		</dependency>
-
-        <!--common-->
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-lang3</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
 		<dependency>
 			<groupId>com.squareup</groupId>
 			<artifactId>javapoet</artifactId>
 			<version>1.11.1</version>
 		</dependency>
 
-        <!--RPC服务-->
 		<dependency>
-			<groupId>org.apache.dubbo</groupId>
-			<artifactId>dubbo</artifactId>
-			<version>${dubbo.version}</version>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-starter</artifactId>
-            <version>${dubbo.version}</version>
-        </dependency>
 
-        <!--zookeeper客户端：curator-->
+		<dependency>
+			<groupId>xiaojian.toolkit</groupId>
+			<artifactId>xt-bean-bytebean</artifactId>
+			<version>2.1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.cetiti.iotp</groupId>
+			<artifactId>iotp-common</artifactId>
+			<version>0.8.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-log4j12</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
         <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-framework</artifactId>
-            <version>${curator.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.curator</groupId>
-            <artifactId>curator-recipes</artifactId>
-            <version>${curator.version}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
         </dependency>
 
 		<dependency>
@@ -142,13 +107,55 @@
 					</excludes>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+                    <useBaseVersion>true</useBaseVersion>
+                    <artifactItems>
+						<artifactItem>
+							<groupId>org.apache.commons</groupId>
+							<artifactId>commons-lang3</artifactId>
+							<version>3.8.1</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>xiaojian.toolkit</groupId>
+							<artifactId>xt-bean-bytebean</artifactId>
+							<version>2.1.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>xiaojian.toolkit</groupId>
+							<artifactId>xt-util</artifactId>
+							<version>2.2.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>com.cetiti.iotp</groupId>
+							<artifactId>iotp-common</artifactId>
+							<version>0.8.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+					</artifactItems>
+				</configuration>
+			</plugin>
 			<!-- Assembly插件帮你构建一个完整的发布包.如:创建一个包含脚本、配置文件以及所有运行时所依赖的元素（jar）的zip压缩包 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
 					<descriptors>
-						<!--描述文件路径-->
+						<!--描述文件路径 -->
 						<descriptor>src/main/assembly/assembly.xml</descriptor>
 					</descriptors>
 				</configuration>

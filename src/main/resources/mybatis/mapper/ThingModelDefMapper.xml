@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.cetiti.iotpcfgservice.mapper.ThingModelDefMapper">
+<mapper namespace="com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper">
 
 	<resultMap id="ThingModel"
-		type="com.cetiti.iotpcfgservice.domain.ThingModelDef">
+		type="com.cetiti.iotp.cfgservice.domain.ThingModelDef">
 		<result column="name" property="name" />
 		<result column="device_model_id" property="deviceModelId" />
 		<result column="device_model" property="deviceModel" />
@@ -20,14 +20,14 @@
 		<result column="modify_user" property="modifyUser" />
 		<result column="modify_time" property="modifyTime" />
 		<collection property="fields"
-			ofType="com.cetiti.iotpcfgservice.domain.ThingModelField"
+			ofType="com.cetiti.iotp.cfgservice.domain.ThingModelField"
 			column="thing_model_id"
-			select="com.cetiti.iotpcfgservice.mapper.ThingModelFieldMapper.fieldListById">
+			select="com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper.fieldListById">
 		</collection>
 	</resultMap>
 
 	<insert id="modelAdd"
-		parameterType="com.cetiti.iotpcfgservice.domain.ThingModelDef"
+		parameterType="com.cetiti.iotp.cfgservice.domain.ThingModelDef"
 		useGeneratedKeys="true" keyProperty="id">
 		INSERT INTO
 		t_thing_model
@@ -39,7 +39,7 @@
 	</insert>
 
 	<update id="modelUpdate"
-		parameterType="com.cetiti.iotpcfgservice.domain.ThingModelDef">
+		parameterType="com.cetiti.iotp.cfgservice.domain.ThingModelDef">
 		UPDATE
 		t_thing_model
 		<set>
@@ -89,10 +89,17 @@
 		FROM t_thing_model WHERE thing_model_id = #{thingModelId}
 	</select>
 
-	<select id="thingModelCount" parameterType="java.lang.String"
+	<select id="thingModelCount"
 		resultType="Integer">
-		SELECT COUNT(0) FROM t_thing_model WHERE device_model =
-		#{deviceModel}
+		SELECT COUNT(0) FROM t_thing_model
+		<where>
+			<if test="userId != null">
+				AND create_user = #{userId}
+			</if>
+			<if test="deviceModel != null">
+				AND device_model = #{deviceModel}
+			</if>
+		</where>
 	</select>
 
 	<select id="modelViewByDeviceModelIdAndModelType" resultMap="ThingModel">
