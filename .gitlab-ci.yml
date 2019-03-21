@@ -17,7 +17,7 @@ build:
   script: mvn clean package
   artifacts:
     paths:
-      - target/iotp-assetservice-cli.zip
+      - target/iotp-cfgservice-cli.zip
 
 deploy:dev:
   stage: deploy
@@ -62,9 +62,9 @@ deploy:dev:
    - ssh-keyscan $DEV_SERVER_IP >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - scp target/iotp-assetservice-cli.zip root@$DEV_SERVER_IP:$PROJECT_PATH
+   - scp target/iotp-cfgservice-cli.zip root@$DEV_SERVER_IP:$PROJECT_PATH
    - ssh root@$DEV_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
-   - ssh root@$DEV_SERVER_IP "unzip -o $PROJECT_PATHiotp-assetservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+   - ssh root@$DEV_SERVER_IP "unzip -o $PROJECT_PATHiotp-cfgservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
   only: 
     - dev
 
@@ -111,8 +111,8 @@ deploy:demo:
    - ssh-keyscan $DEMO_SERVER_IP >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - scp target/iotp-assetservice-cli.zip root@$DEMO_SERVER_IP:$PROJECT_PATH
+   - scp target/iotp-cfgservice-cli.zip root@$DEMO_SERVER_IP:$PROJECT_PATH
    - ssh root@$DEMO_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
-   - ssh root@$DEMO_SERVER_IP "unzip -o $PROJECT_PATHiotp-assetservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+   - ssh root@$DEMO_SERVER_IP "unzip -o $PROJECT_PATHiotp-cfgservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
   only: 
     - master
