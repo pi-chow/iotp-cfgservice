@@ -6,6 +6,10 @@ import com.cetiti.ddapv2.iotplatform.common.utils.CookieUtil;
 import com.cetiti.ddapv2.iotplatform.common.utils.JwtUtil;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.result.Result;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +59,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
 
         try {
             return JwtUtil.verifyAndParse(accessToken);
-        } catch (Exception e) {
+        } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException | IllegalArgumentException e) {
             logger.error("access jwt错误.", e);
             return null;
         }
