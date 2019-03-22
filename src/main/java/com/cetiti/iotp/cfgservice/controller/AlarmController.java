@@ -126,7 +126,7 @@ public class AlarmController {
         }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
         if(alarmConfig.getField().equals(EVENT_NAME)){
-            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(7));
+            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(8));
             offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
         }
         return alarmId != null ? Result.ok().put("alarmId", alarmId) : Result
@@ -152,7 +152,7 @@ public class AlarmController {
         }
         boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         if(alarmConfig.getField().equals(EVENT_NAME)){
-            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(7));
+            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(8));
             offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
         }
         return success ? Result.ok() : Result.error("告警配置更新失败");
