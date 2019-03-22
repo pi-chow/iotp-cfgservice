@@ -150,11 +150,11 @@ public class AlarmController {
         if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
             return Result.error("描述字段包含空格");
         }
+        boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         if(alarmConfig.getField().equals(EVENT_NAME)){
             int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(7));
             offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
         }
-        boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         return success ? Result.ok() : Result.error("告警配置更新失败");
     }
 
