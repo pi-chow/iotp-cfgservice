@@ -1,7 +1,9 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
+import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
 import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
@@ -9,10 +11,12 @@ import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
+import com.cetiti.iotp.itf.coreservice.OfflineCheckService;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.dubbo.config.annotation.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +45,11 @@ public class AlarmServiceImpl implements AlarmService {
     @Autowired
     private DeviceAlarmConfigMapper deviceAlarmConfigMapper;
 
+    @Reference
+    private OfflineCheckService offlineCheckService;
+
+
+    private static final String EVENT_NAME = "offline";
 
     private static File file = new File("exception-guard.xml");
 
@@ -67,6 +76,16 @@ public class AlarmServiceImpl implements AlarmService {
         record.setAlarmId(alarmId);
         record.setCreateTime(new Date());
         record.setCreateUser(account.getUserId());
+        record.setModifyTime(new Date());
+        record.setModifyUser(account.getUserId());
+        if(record.getField().equals(EVENT_NAME)){
+            int offlineTimeInterval = Integer.parseInt(record.getConditions().substring(8));
+            try {
+                offlineCheckService.addNeedCheckModel(record.getDeviceModel(), offlineTimeInterval);
+            }catch (Exception e){
+                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
+            }
+        }
         deviceAlarmConfigMapper.insert(record);
         return alarmId;
     }
@@ -74,15 +93,23 @@ public class AlarmServiceImpl implements AlarmService {
     /**
      * 修改告警配置
      * @param account 账户
-     * @param record 告警配置类
+     * @param alarmConfig 告警配置类
      * @return
      */
     @Override
-    public boolean updateAlarmConfig(JwtAccount account, DeviceAlarmConfig record) {
+    public boolean updateAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmConfig) {
         setLastModified();
-        record.setModifyTime(new Date());
-        record.setModifyUser(account.getUserId());
-        return deviceAlarmConfigMapper.updateByPrimaryKeySelective(record) == 1;
+        alarmConfig.setModifyTime(new Date());
+        alarmConfig.setModifyUser(account.getUserId());
+        if(alarmConfig.getField().equals(EVENT_NAME)){
+            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(8));
+            try {
+                offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
+            }catch (Exception e){
+                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
+            }
+        }
+        return deviceAlarmConfigMapper.updateByPrimaryKeySelective(alarmConfig) == 1;
     }
 
     /**
@@ -94,6 +121,14 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public boolean deleteAlarmConfig(String alarmId) {
         setLastModified();
+        DeviceAlarmConfig alarmConfig = getAlarmConfig(alarmId);
+        if(alarmConfig.getField().equals(EVENT_NAME)){
+            try {
+                offlineCheckService.removeNeedCheckModel(alarmConfig.getDeviceModel());
+            }catch (Exception e){
+                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
+            }
+        }
         return deviceAlarmConfigMapper.deleteByPrimaryKey(alarmId) == 1;
     }
 

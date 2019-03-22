@@ -19,6 +19,10 @@ public class CfgResultCode extends BaseResultCode {
     public static final ResultCode DEVICE_MODEL_NOT_EXIST = new CfgResultCode(4001, "设备型号不存在,请先添加");
     public static final ResultCode DEVICE_MODEL_ALREADY_EXIST = new CfgResultCode(4002, "设备型号已存在");
 
+    /**
+     * 告警
+     * */
+    public static final ResultCode ALARM_EVENT_OFFLINE_REDIS = new CfgResultCode(4004, "设备离线告警redis异常");
 
     /**
      * 设备协议模型
