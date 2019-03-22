@@ -8,6 +8,7 @@ import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
@@ -145,6 +146,19 @@ public class AlarmServiceImpl implements AlarmService {
         Map<String, Object> map = Maps.newHashMap();
         map.put("deviceModel", deviceModel);
         return alarmMapper.alarmCountByModel(map);
+    }
+
+    /**
+     * 获取设备型号状态
+     * */
+    @Override
+    public ThingModelField getDeviceModelStatus() {
+        ThingModelField thingModelFieldOffLine = new ThingModelField();
+        thingModelFieldOffLine.setCharset("UTF-8");
+        thingModelFieldOffLine.setName("offline");
+        thingModelFieldOffLine.setLabel("离线");
+        thingModelFieldOffLine.setUnit("s");
+        return thingModelFieldOffLine;
     }
 
     /**

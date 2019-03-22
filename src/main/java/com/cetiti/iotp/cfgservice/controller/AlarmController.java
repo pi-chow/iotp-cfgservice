@@ -9,6 +9,7 @@ import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import com.cetiti.iotp.cfgservice.service.impl.AlarmServiceImpl;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
+import com.cetiti.iotp.itf.coreservice.OfflineCheckService;
 import com.cetiti.iotp.itf.platformservice.DeviceModelService;
 import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
 import com.github.pagehelper.Page;
@@ -47,7 +48,10 @@ public class AlarmController {
     @Autowired
     private ThingModelService thingModelService;
 
+    @Reference
+    private OfflineCheckService offlineCheckService;
 
+    private static final String EVENT_NAME = "offline";
     /**
      * 获取告警配置列表
      *
@@ -121,6 +125,10 @@ public class AlarmController {
             return Result.error("描述字段包含空格");
         }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
+        if(alarmConfig.getField().equals(EVENT_NAME)){
+            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(7));
+            offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
+        }
         return alarmId != null ? Result.ok().put("alarmId", alarmId) : Result
                 .error("新增告警失败！");
     }
@@ -142,7 +150,10 @@ public class AlarmController {
         if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
             return Result.error("描述字段包含空格");
         }
-
+        if(alarmConfig.getField().equals(EVENT_NAME)){
+            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(7));
+            offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
+        }
         boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
         return success ? Result.ok() : Result.error("告警配置更新失败");
     }
@@ -157,6 +168,12 @@ public class AlarmController {
     public Result deleteAlarm(@PathVariable("alarmId") String alarmId) {
 
         boolean success = alarmService.deleteAlarmConfig(alarmId);
+
+        DeviceAlarmConfig alarmConfig = alarmService.getAlarmConfig(alarmId);
+        if(alarmConfig.getField().equals(EVENT_NAME)){
+            offlineCheckService.removeNeedCheckModel(alarmConfig.getDeviceModel());
+        }
+
         return success ? Result.ok() : Result.error("删除告警失败！");
     }
 
@@ -186,6 +203,7 @@ public class AlarmController {
             return Result.error("设备型号不能为空");
         }
         List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(account, category);
+        attributeList.add(alarmService.getDeviceModelStatus());
         return Result.ok().put("attributeList", attributeList);
 
     }

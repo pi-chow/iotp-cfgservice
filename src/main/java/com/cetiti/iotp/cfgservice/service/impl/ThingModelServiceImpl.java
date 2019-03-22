@@ -337,6 +337,14 @@ public class ThingModelServiceImpl implements ThingModelService {
 		return modelDefMapper.deleteTemplateByDeviceModelId(templateId) > 0;
 	}
 
+	@Deprecated
+	@Override
+	public List<String> getThingModelType(JwtAccount account, String deviceModel) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        String userId = DevUser.isDeveloper(account);
+        return modelDefMapper.getThingModelType(userId, deviceModel);
+	}
+
 	/**
 	 * 新增模型字段列表
 	 * 
@@ -422,7 +430,21 @@ public class ThingModelServiceImpl implements ThingModelService {
 		return fieldMapper.listSensoryThingModelFieldByDeviceModel(userId, deviceModel);
 	}
 
-	@Override
+    /**
+     * 根据设备型号获取模型属性
+     * @param account 用户
+     * @param deviceModel 设备型号
+     * @param thingModelName 协议模型名
+     * */
+    @Override
+    public List<ThingModelField> listThingModelFieldByDeviceModel(JwtAccount account, String deviceModel, String thingModelName) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        Preconditions.checkArgument(StringUtils.isNotBlank(thingModelName));
+        String userId = DevUser.isDeveloper(account);
+        return fieldMapper.listThingModelFieldByDeviceModel(userId, deviceModel, thingModelName);
+    }
+
+    @Override
 	public List<String> getUsableStoreType(String dataType) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(dataType));
 		return DataTypeStoreTypeRelation.getStoreType(dataType);
