@@ -193,7 +193,7 @@ public class ThingModelProcessorImpl implements ThingModelProcessor {
 		if (deviceModel == null) {
 			LOGGER.error("Cannot get deviceModel by modelId[" + model.getDeviceModelId() + "], model["
 					+ model.getDeviceModel() + "]");
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_MISS);
+			throw new BizLocaleException(CfgResultCode.DEVICE_MODEL_NOT_EXIST);
 		}
 
 		List<ThingModelField> fields = model.getFields();

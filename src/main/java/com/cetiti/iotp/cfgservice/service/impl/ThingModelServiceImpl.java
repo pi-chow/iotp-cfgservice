@@ -53,7 +53,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
 
-	@Reference
+    @Reference
     private DeviceModelService deviceModelService;
 
 	@Autowired
@@ -76,7 +76,9 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		logger.debug("Publis all model, account[{}].", account);
 
-		List<ThingModelDef> modelList = modelDefMapper.modelList(DevUser.isDeveloper(account), null);
+		String userId = DevUser.isDeveloper(account);
+
+		List<ThingModelDef> modelList = modelDefMapper.modelList(userId, null);
         List<ThingModelDef> failure = Lists.newArrayList();
 
 		if (modelList == null || modelList.size() == 0) {
@@ -103,6 +105,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
+            modelProcessor.packageAll();
             return failure;
         }else {
             // -- 打包
