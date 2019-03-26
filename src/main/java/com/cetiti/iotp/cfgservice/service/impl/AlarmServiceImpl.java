@@ -4,8 +4,10 @@ import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
+import com.cetiti.iotp.cfgservice.domain.AlarmType;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
+import com.cetiti.iotp.cfgservice.enums.AlarmTypeEnum;
 import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
@@ -13,6 +15,7 @@ import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.cetiti.iotp.itf.coreservice.OfflineCheckService;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,9 +27,9 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  * 告警服务实现。
@@ -78,7 +81,7 @@ public class AlarmServiceImpl implements AlarmService {
         record.setCreateUser(account.getUserId());
         record.setModifyTime(new Date());
         record.setModifyUser(account.getUserId());
-        if(record.getField().equals(EVENT_NAME)){
+        if(record.getAlarmType().equals(EVENT_NAME)){
             int offlineTimeInterval = Integer.parseInt(record.getConditions().substring(8));
             try {
                 offlineCheckService.addNeedCheckModel(record.getDeviceModel(), offlineTimeInterval);
@@ -101,7 +104,7 @@ public class AlarmServiceImpl implements AlarmService {
         setLastModified();
         alarmConfig.setModifyTime(new Date());
         alarmConfig.setModifyUser(account.getUserId());
-        if(alarmConfig.getField().equals(EVENT_NAME)){
+        if(alarmConfig.getAlarmType().equals(EVENT_NAME)){
             int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(8));
             try {
                 offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
@@ -122,7 +125,7 @@ public class AlarmServiceImpl implements AlarmService {
     public boolean deleteAlarmConfig(String alarmId) {
         setLastModified();
         DeviceAlarmConfig alarmConfig = getAlarmConfig(alarmId);
-        if(alarmConfig.getField().equals(EVENT_NAME)){
+        if(alarmConfig.getAlarmType().equals(EVENT_NAME)){
             try {
                 offlineCheckService.removeNeedCheckModel(alarmConfig.getDeviceModel());
             }catch (Exception e){
@@ -194,6 +197,22 @@ public class AlarmServiceImpl implements AlarmService {
         thingModelFieldOffLine.setLabel("离线");
         thingModelFieldOffLine.setUnit("s");
         return thingModelFieldOffLine;
+    }
+
+    /**
+     *获取告警类型
+     * */
+    @Override
+    public List<AlarmType> alarmTypeList() {
+        List<AlarmTypeEnum> alarmTypeList = Lists.newArrayList(AlarmTypeEnum.values());
+        List<AlarmType> alarmTypes = new ArrayList<>();
+        for (AlarmTypeEnum alarmTypeEnum : alarmTypeList){
+            AlarmType alarmType = new AlarmType();
+            alarmType.setValue(alarmTypeEnum.getValue());
+            alarmType.setLabel(alarmTypeEnum.getLabel());
+            alarmTypes.add(alarmType);
+        }
+        return alarmTypes;
     }
 
     /**

@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>iotp-cfgservice</artifactId>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<description>Configuration Management Service</description>
 
     <repositories>
@@ -82,7 +82,7 @@
 	</dependencies>
 
 	<build>
-		<finalName>iotp-cfgservice</finalName>
+		<finalName>iotp-cfgservice-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

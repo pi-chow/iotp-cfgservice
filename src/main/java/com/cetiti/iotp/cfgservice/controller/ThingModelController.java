@@ -6,7 +6,6 @@ import com.cetiti.ddapv2.iotplatform.common.tip.BaseTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
-import com.cetiti.iotp.cfgservice.common.result.Result;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
@@ -103,11 +102,16 @@ public class ThingModelController {
 	@ApiOperation(value = "从模板添加物模型")
 	@GetMapping(value = "/addFromTemplate")
 	public BaseTip modelAddFromTemplate(JwtAccount account,
-			@RequestParam("templateId") String modelTemplateId, @RequestParam("deviceModelId") String deviceModelId) {
+			@RequestParam("templateId") String modelTemplateId,
+			@RequestParam("deviceModelId") String deviceModelId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(modelTemplateId));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelId));
 
-		modelService.addModelFromTemplate(modelTemplateId, deviceModelId, account);
+		try {
+			modelService.addModelFromTemplate(modelTemplateId, deviceModelId, account);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
 		return new SuccessTip("模板创建成功");
 	}
 
@@ -184,9 +188,12 @@ public class ThingModelController {
 	 * @return
 	 */
 	@GetMapping(value = "/template/add/{deviceModelId}")
-	public BaseTip templateModelAddd(JwtAccount account, @PathVariable("deviceModelId") String deviceModelId) {
-		modelService.makeTemplate(deviceModelId, account);
-
+	public BaseTip templateModelAdd(JwtAccount account, @PathVariable("deviceModelId") String deviceModelId) {
+		try {
+			modelService.makeTemplate(deviceModelId, account);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
 		return new SuccessTip("设备模型作为模板成功");
 	}
 
@@ -198,7 +205,12 @@ public class ThingModelController {
 	 */
 	@DeleteMapping(value = "/template/del/{templateId}")
 	public BaseTip templateModelDelete(@PathVariable("templateId") String templateId) {
-		boolean success = modelService.deleteTemplate(templateId);
+		boolean success;
+		try {
+			success = modelService.deleteTemplate(templateId);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
 		return success ? new SuccessTip("删除模板成功") : new ErrorTip(CfgResultCode.THING_MODEL_TEMPLATE_DELETE);
 	}
 

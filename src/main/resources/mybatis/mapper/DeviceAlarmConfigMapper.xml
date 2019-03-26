@@ -6,6 +6,7 @@
         <result column="device_model" jdbcType="VARCHAR" property="deviceModel"/>
         <result column="device_model_name" jdbcType="VARCHAR" property="deviceModelName"/>
         <result column="field" jdbcType="VARCHAR" property="field"/>
+        <result column="alarm_type" jdbcType="TINYINT" property="alarmType"/>
         <result column="alarm_level" jdbcType="TINYINT" property="alarmLevel"/>
         <result column="conditions" jdbcType="VARCHAR" property="conditions"/>
         <result column="description" jdbcType="VARCHAR" property="description"/>
@@ -17,7 +18,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, device_model, field, conditions, description, alarm_id, alarm_level,
+        id, device_model, device_model_name, field, conditions, description, alarm_id, alarm_level, alarm_type,
         modify_time, create_user, modify_user, create_time
     </sql>
 
@@ -48,10 +49,10 @@
     </delete>
 
     <insert id="insert" parameterType="com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model, field, conditions, description, alarm_id, alarm_level, create_user, create_time, modify_time, modify_user)
-        values (#{deviceModel,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
+        insert into t_device_alarm_config (device_model, device_model_name, field, conditions, description, alarm_id, alarm_level, alarm_type, create_user, create_time, modify_time, modify_user)
+        values (#{deviceModel,jdbcType=VARCHAR}, #{deviceModelName,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
                 #{conditions,jdbcType=VARCHAR},#{description,jdbcType=VARCHAR},
-                #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT},
+                #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT}, #{alarmType,jdbcType=VARCHAR}
                 #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{modifyTime,jdbcType=TIMESTAMP}, #{modifyUser,jdbcType=VARCHAR})
     </insert>
@@ -62,11 +63,17 @@
                 <if test="deviceModel != null">
                     device_model = #{deviceModel,jdbcType=VARCHAR},
                 </if>
+                <if test="deviceModelName != null">
+                    device_model_name = #{deviceModelName,jdbcType=VARCHAR},
+                </if>
                 <if test="field != null">
                     field = #{field,jdbcType=VARCHAR},
                 </if>
                 <if test="alarmLevel != null">
                     alarm_Level = #{alarmLevel,jdbcType=TINYINT},
+                </if>
+                <if test="alarmType != null">
+                    alarm_type = #{alarmType,jdbcType=VARCHAR},
                 </if>
                 <if test="conditions != null">
                     conditions = #{conditions,jdbcType=VARCHAR},

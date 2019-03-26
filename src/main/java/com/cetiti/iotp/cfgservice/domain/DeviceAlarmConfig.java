@@ -23,8 +23,6 @@ public class DeviceAlarmConfig implements Serializable {
 
     private String deviceModelName;
 
-    private String deviceSn;
-
     private String field;
 
     private String conditions;
@@ -32,6 +30,8 @@ public class DeviceAlarmConfig implements Serializable {
     private String description;
 
     private String alarmId;
+
+    private String alarmType;
 
     private String alarmLevel;
     
@@ -75,14 +75,6 @@ public class DeviceAlarmConfig implements Serializable {
         this.deviceModelName = deviceModelName;
     }
 
-    public String getDeviceSn() {
-        return deviceSn;
-    }
-
-    public void setDeviceSn(String deviceSn) {
-        this.deviceSn = deviceSn == null ? null : deviceSn.trim();
-    }
-
     public String getField() {
         return field;
     }
@@ -113,6 +105,14 @@ public class DeviceAlarmConfig implements Serializable {
 
     public void setAlarmId(String alarmId) {
         this.alarmId = alarmId == null ? null : alarmId.trim();
+    }
+
+    public String getAlarmType() {
+        return alarmType;
+    }
+
+    public void setAlarmType(String alarmType) {
+        this.alarmType = alarmType;
     }
 
     public Date getModifyTime() {

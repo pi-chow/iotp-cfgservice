@@ -2,10 +2,10 @@ package com.cetiti.iotp.cfgservice.common.access;
 
 import com.alibaba.fastjson.JSON;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
 import com.cetiti.ddapv2.iotplatform.common.utils.CookieUtil;
 import com.cetiti.ddapv2.iotplatform.common.utils.JwtUtil;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
-import com.cetiti.iotp.cfgservice.common.result.Result;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
@@ -68,7 +68,7 @@ public class AccessInterceptor extends HandlerInterceptorAdapter {
     private void render(HttpServletResponse response, ResultCode cfgResultCode) throws Exception {
         response.setContentType("application/json;charset=UTF-8");
         OutputStream out = response.getOutputStream();
-        String str = JSON.toJSONString(Result.error(cfgResultCode));
+        String str = JSON.toJSONString(new ErrorTip(cfgResultCode));
         out.write(str.getBytes("UTF-8"));
         out.flush();
         out.close();
