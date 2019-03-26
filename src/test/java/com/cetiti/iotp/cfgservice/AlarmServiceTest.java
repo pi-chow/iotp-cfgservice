@@ -3,7 +3,7 @@ package com.cetiti.iotp.cfgservice;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
-import com.cetiti.iotp.itf.platformservice.DeviceModelService;
+import com.cetiti.iotp.itf.assetservice.DeviceModelService;
 import org.apache.dubbo.config.annotation.Reference;
 import org.junit.Test;
 import org.junit.runner.RunWith;

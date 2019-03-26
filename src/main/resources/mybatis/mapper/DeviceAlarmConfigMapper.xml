@@ -49,10 +49,11 @@
     </delete>
 
     <insert id="insert" parameterType="com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model, device_model_name, field, conditions, description, alarm_id, alarm_level, alarm_type, create_user, create_time, modify_time, modify_user)
+        insert into t_device_alarm_config (device_model, device_model_name, field, conditions,
+        description, alarm_id, alarm_level, alarm_type, create_user, create_time, modify_time, modify_user)
         values (#{deviceModel,jdbcType=VARCHAR}, #{deviceModelName,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
                 #{conditions,jdbcType=VARCHAR},#{description,jdbcType=VARCHAR},
-                #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT}, #{alarmType,jdbcType=VARCHAR}
+                #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT},#{alarmType,jdbcType=VARCHAR},
                 #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{modifyTime,jdbcType=TIMESTAMP}, #{modifyUser,jdbcType=VARCHAR})
     </insert>
