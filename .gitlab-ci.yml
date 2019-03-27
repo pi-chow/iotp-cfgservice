@@ -12,17 +12,29 @@ cache:
   paths:
     - .m2/repository/
 
-build:
+build:dev:
   stage: build
-  script: mvn clean package
+  script: mvn clean package -Pdev
   artifacts:
     paths:
       - target/iotp-cfgservice-cli.zip
+  only: 
+    - dev
+
+build:demo:
+  stage: build
+  script: mvn clean package -Pdemo
+  artifacts:
+    paths:
+      - target/iotp-cfgservice-cli.zip
+  only: 
+    - master
+    - tags
 
 deploy:dev:
   stage: deploy
   before_script:
-   ##
+   ###
    ## Install ssh-agent if not already installed, it is required by Docker.
    ## (change apt-get to yum if you use an RPM-based image)
    ##
@@ -40,7 +52,7 @@ deploy:dev:
    ## without extra base64 encoding.
    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
    ##
-   - echo "$DEV_SERVER_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+   - echo "${DEV_SERVER_PRIVATE_KEY}" | tr -d '\r' | ssh-add - > /dev/null
 
    ##
    ## Create the SSH directory and give it the right permissions
@@ -59,12 +71,13 @@ deploy:dev:
    ## Replace example.com with your private server's domain name. Repeat that
    ## command if you have more than one server to connect to.
    ##
-   - ssh-keyscan $DEV_SERVER_IP >> ~/.ssh/known_hosts
+   - ssh-keyscan ${DEV_SERVER_IP} >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - scp target/iotp-cfgservice-cli.zip root@$DEV_SERVER_IP:$PROJECT_PATH
-   - ssh root@$DEV_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
-   - ssh root@$DEV_SERVER_IP "unzip -o $PROJECT_PATHiotp-cfgservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+   - scp target/iotp-cfgservice-cli.zip root@${DEV_SERVER_IP}:${PROJECT_PATH}
+   # - ssh root@${DEV_SERVER_IP} "[ -f ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh ] && sh ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh || echo 'not deployed'"
+   # - ssh root@${DEV_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};sh ${PROJECT_PATH}/${PROJECT_NAME}/start.sh"
+   - ssh root@${DEV_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
   only: 
     - dev
 
@@ -89,7 +102,7 @@ deploy:demo:
    ## without extra base64 encoding.
    ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
    ##
-   - echo "$DEMO_SERVER_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+   - echo "${DEMO_SERVER_PRIVATE_KEY}" | tr -d '\r' | ssh-add - > /dev/null
 
    ##
    ## Create the SSH directory and give it the right permissions
@@ -108,11 +121,13 @@ deploy:demo:
    ## Replace example.com with your private server's domain name. Repeat that
    ## command if you have more than one server to connect to.
    ##
-   - ssh-keyscan $DEMO_SERVER_IP >> ~/.ssh/known_hosts
+   - ssh-keyscan ${DEMO_SERVER_IP} >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - scp target/iotp-cfgservice-cli.zip root@$DEMO_SERVER_IP:$PROJECT_PATH
-   - ssh root@$DEMO_SERVER_IP "[ -f $PROJECT_PATH$PROJECT_NAME/stop.sh ] && sh $PROJECT_PATH$PROJECT_NAME/stop.sh || echo 'not deployed'"
-   - ssh root@$DEMO_SERVER_IP "unzip -o $PROJECT_PATHiotp-cfgservice-cli.zip -d $PROJECT_PATH;sh $PROJECT_PATH$PROJECT_NAME/start.sh"
+   - scp target/iotp-cfgservice-cli.zip root@${DEMO_SERVER_IP}:${PROJECT_PATH}
+   # - ssh root@${DEMO_SERVER_IP} "[ -f ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh ] && cd ${PROJECT_PATH}/${PROJECT_NAME}; sh stop.sh || echo 'not deployed'"
+   # - ssh root@${DEMO_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME}; sh start.sh"
+   - ssh root@${DEMO_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
   only: 
     - master
+    - tags
