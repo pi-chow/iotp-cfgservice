@@ -19,4 +19,5 @@ public interface DeviceAlarmConfigMapper {
     int updateByPrimaryKeySelective(DeviceAlarmConfig record);
 
     List<DeviceAlarmConfig> searchDeviceAlarmConfig(Map<String, Object> params);
+
 }

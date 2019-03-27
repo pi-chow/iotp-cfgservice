@@ -25,7 +25,15 @@ public class DeviceAlarmConfig implements Serializable {
 
     private String field;
 
-    private String conditions;
+    /**
+     * 关系
+     * */
+    private String relation;
+
+    /**
+     * 数值
+     * */
+    private String threshold;
 
     private String description;
 
@@ -83,12 +91,20 @@ public class DeviceAlarmConfig implements Serializable {
         this.field = field == null ? null : field.trim();
     }
 
-    public String getConditions() {
-        return conditions;
+    public String getRelation() {
+        return relation;
     }
 
-    public void setConditions(String conditions) {
-        this.conditions = conditions == null ? null : conditions.trim();
+    public void setRelation(String relation) {
+        this.relation = relation;
+    }
+
+    public String getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(String threshold) {
+        this.threshold = threshold;
     }
 
     public String getDescription() {

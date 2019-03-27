@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,11 +190,7 @@ public class ThingModelController {
 	 */
 	@GetMapping(value = "/template/add/{deviceModelId}")
 	public BaseTip templateModelAdd(JwtAccount account, @PathVariable("deviceModelId") String deviceModelId) {
-		try {
-			modelService.makeTemplate(deviceModelId, account);
-		}catch (BizLocaleException e){
-			return new ErrorTip(e.getErrorCode());
-		}
+		modelService.makeTemplate(deviceModelId, account);
 		return new SuccessTip("设备模型作为模板成功");
 	}
 
@@ -205,12 +202,7 @@ public class ThingModelController {
 	 */
 	@DeleteMapping(value = "/template/del/{templateId}")
 	public BaseTip templateModelDelete(@PathVariable("templateId") String templateId) {
-		boolean success;
-		try {
-			success = modelService.deleteTemplate(templateId);
-		}catch (BizLocaleException e){
-			return new ErrorTip(e.getErrorCode());
-		}
+		boolean success = modelService.deleteTemplate(templateId);
 		return success ? new SuccessTip("删除模板成功") : new ErrorTip(CfgResultCode.THING_MODEL_TEMPLATE_DELETE);
 	}
 
@@ -256,12 +248,8 @@ public class ThingModelController {
 	@ApiOperation(value = "发布所有已经配置的模型")
 	@GetMapping(value = "/publish")
 	public BaseTip modelPublish(JwtAccount account) {
-		List<ThingModelDef> failure = Lists.newArrayList();
-		try {
-			failure = modelService.allModelPublish(account);
-		} catch (BizLocaleException exception) {
-			return new ErrorTip(exception.getErrorCode());
-		}
+		List<ThingModelDef> failure = new ArrayList<>();
+		failure = modelService.allModelPublish(account);
 
 		if (failure == null || failure.size() == 0) {
 			return new SuccessTip("所有模型发布成功");
@@ -296,7 +284,7 @@ public class ThingModelController {
 			outputStream.write(FileUtils.readFileToByteArray(file));
 			outputStream.flush();
 		} catch (IOException e) {
-			logger.error("Get jar fail.", e);
+			throw new BizLocaleException(CfgResultCode.THING_JAR_NOT_FOUND);
 		} finally {
 			IOUtils.closeQuietly(outputStream);
 		}

@@ -29,7 +29,6 @@ public class AlarmServiceTest {
         DeviceAlarmConfig alarmConfig = new DeviceAlarmConfig();
         alarmConfig.setDeviceModel("ThingSensoryMsgDemo");
         alarmConfig.setField("attribute1");
-        alarmConfig.setConditions("attribute1>300");
         JwtAccount account = new JwtAccount();
         account.setUserId("111");
         alarmService.addAlarmConfig(account, alarmConfig);

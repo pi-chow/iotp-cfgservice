@@ -69,27 +69,20 @@ public class AlarmServiceImpl implements AlarmService {
     /**
      * 新增告警配置
      * @param account 账户
-     * @param record 告警配置类
+     * @param alarmConfig 告警配置类
      * @return
      */
     @Override
-    public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig record) {
+    public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmConfig) {
         setLastModified();
         String alarmId = GenerationSequenceUtil.uuid();
-        record.setAlarmId(alarmId);
-        record.setCreateTime(new Date());
-        record.setCreateUser(account.getUserId());
-        record.setModifyTime(new Date());
-        record.setModifyUser(account.getUserId());
-        if(record.getAlarmType().equals(EVENT_NAME)){
-            int offlineTimeInterval = Integer.parseInt(record.getConditions().substring(8));
-            try {
-                offlineCheckService.addNeedCheckModel(record.getDeviceModel(), offlineTimeInterval);
-            }catch (Exception e){
-                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
-            }
-        }
-        deviceAlarmConfigMapper.insert(record);
+        alarmConfig.setAlarmId(alarmId);
+        alarmConfig.setCreateTime(new Date());
+        alarmConfig.setCreateUser(account.getUserId());
+        alarmConfig.setModifyTime(new Date());
+        alarmConfig.setModifyUser(account.getUserId());
+        insertOffline(alarmConfig.getAlarmType(), alarmConfig.getThreshold(), alarmConfig.getDeviceModel());
+        deviceAlarmConfigMapper.insert(alarmConfig);
         return alarmId;
     }
 
@@ -104,14 +97,11 @@ public class AlarmServiceImpl implements AlarmService {
         setLastModified();
         alarmConfig.setModifyTime(new Date());
         alarmConfig.setModifyUser(account.getUserId());
-        if(alarmConfig.getAlarmType().equals(EVENT_NAME)){
-            int offlineTimeInterval = Integer.parseInt(alarmConfig.getConditions().substring(8));
-            try {
-                offlineCheckService.addNeedCheckModel(alarmConfig.getDeviceModel(), offlineTimeInterval);
-            }catch (Exception e){
-                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
-            }
+        if(alarmConfig.getAlarmType().equals("offline")){
+            alarmConfig.setAlarmLevel(null);
+            alarmConfig.setDescription(null);
         }
+        insertOffline(alarmConfig.getAlarmType(), alarmConfig.getThreshold(), alarmConfig.getDeviceModel());
         return deviceAlarmConfigMapper.updateByPrimaryKeySelective(alarmConfig) == 1;
     }
 
@@ -234,6 +224,23 @@ public class AlarmServiceImpl implements AlarmService {
     public DeviceAlarmConfig getAlarmConfig(String alarmId) {
 
         return deviceAlarmConfigMapper.getAlarmConfig(alarmId);
+    }
+
+    /**
+     * 离线告警
+     * */
+    private void insertOffline(String alarmType, String threshold, String deviceModel){
+        if(alarmType.equals(EVENT_NAME)){
+            int offlineTimeInterval = Integer.parseInt(threshold);
+            if(offlineTimeInterval <= 0){
+                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_ZERO);
+            }
+            try {
+                offlineCheckService.addNeedCheckModel(deviceModel, offlineTimeInterval);
+            }catch (Exception e){
+                throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
+            }
+        }
     }
 
 }

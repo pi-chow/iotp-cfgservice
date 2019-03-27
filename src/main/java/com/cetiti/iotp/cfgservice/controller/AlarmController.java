@@ -2,6 +2,7 @@ package com.cetiti.iotp.cfgservice.controller;
 
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.tip.BaseTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;
@@ -128,7 +129,7 @@ public class AlarmController {
             return new ErrorTip(CfgResultCode.ALARM_DESCRIPTION_EMPTY);
         }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
-        return alarmId != null ? new SuccessTip(alarmId) : new ErrorTip(CfgResultCode.ALARM_CFG_ADD);
+        return alarmId != null ? new SuccessTip("告警配置添加成功") : new ErrorTip(CfgResultCode.ALARM_CFG_ADD);
     }
 
     /**
@@ -149,7 +150,7 @@ public class AlarmController {
             return new ErrorTip(CfgResultCode.ALARM_DESCRIPTION_EMPTY);
         }
         boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
-        return success ? new SuccessTip() : new ErrorTip(CfgResultCode.ALARM_CFG_UPDATE);
+        return success ? new SuccessTip("告警配置更新成功") : new ErrorTip(CfgResultCode.ALARM_CFG_UPDATE);
     }
 
     /**
@@ -160,10 +161,8 @@ public class AlarmController {
     @ApiOperation("删除告警配置")
     @DeleteMapping(value = "/delete/{alarmId}")
     public BaseTip deleteAlarm(@PathVariable("alarmId") String alarmId) {
-
         boolean success = alarmService.deleteAlarmConfig(alarmId);
-
-        return success ? new SuccessTip() : new ErrorTip(CfgResultCode.ALARM_CFG_DELETE);
+        return success ? new SuccessTip("告警配置删除成功") : new ErrorTip(CfgResultCode.ALARM_CFG_DELETE);
     }
 
 

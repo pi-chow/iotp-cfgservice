@@ -23,6 +23,7 @@ public class CfgResultCode extends BaseResultCode {
      * 告警
      * */
     public static final ResultCode ALARM_EVENT_OFFLINE_REDIS = new CfgResultCode(90002001, "设备离线告警redis异常");
+    public static final ResultCode ALARM_EVENT_OFFLINE_ZERO = new CfgResultCode(90002001, "设备离线告警需大于0");
     public static final ResultCode ALARM_START_AND_END = new CfgResultCode(90003002, "错误的起止时间");
     public static final ResultCode ALARM_DESCRIPTION_EMPTY = new CfgResultCode(90003003, "描述字段为空格");
     public static final ResultCode ALARM_CFG_ADD = new CfgResultCode(90001004, "新增告警配置失败");
