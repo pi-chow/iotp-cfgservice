@@ -1,9 +1,9 @@
 package com.cetiti.iotp.cfgservice.service;
 
 
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-
 import java.io.File;
+
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 
 /**
  * 物模型构建处理器

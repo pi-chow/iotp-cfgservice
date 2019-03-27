@@ -1,8 +1,9 @@
 package com.cetiti.iotp.cfgservice.mapper;
 
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 
 import java.util.List;
 import java.util.Map;
@@ -88,5 +89,12 @@ public interface ThingModelDefMapper {
 	 * @return
 	 */
 	int deleteTemplateByDeviceModelId(String deviceModelId);
+
+	/**
+	 * 根据设备型号获取协议模型类型
+	 * @param userId 用户
+	 * @param deviceModel 设备型号
+	 * */
+	List<String> getThingModelType(@Param("userId") String userId, @Param("deviceModel") String deviceModel);
 
 }

@@ -152,4 +152,17 @@
 		UPDATE
 		t_thing_model SET template=0 WHERE device_model_id=#{value}
 	</update>
+
+	<select id="getThingModelType" resultType="java.lang.String">
+		SELECT `name` FROM t_thing_model
+		<where>
+			<if test="userId != nul">
+				AND create_user = #{userId}
+			</if>
+			<if test="deviceModel != null">
+				AND  device_model = #{deviceModel}
+			</if>
+		</where>
+	</select>
+
 </mapper>

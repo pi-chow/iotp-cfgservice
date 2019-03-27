@@ -2,18 +2,23 @@ package com.cetiti.iotp.cfgservice.controller;
 
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
-import com.cetiti.iotp.cfgservice.common.result.Result;
+import com.cetiti.ddapv2.iotplatform.common.tip.BaseTip;
+import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
+import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;
+import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import com.cetiti.iotp.cfgservice.service.impl.AlarmServiceImpl;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
-import com.cetiti.iotp.itf.platformservice.DeviceModelService;
-import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
+import com.cetiti.iotp.itf.assetservice.DeviceModelService;
+import com.cetiti.iotp.itf.assetservice.vo.DeviceModel;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -47,24 +52,25 @@ public class AlarmController {
     @Autowired
     private ThingModelService thingModelService;
 
-
     /**
      * 获取告警配置列表
      *
      * @return
      */
     @ApiOperation("获取告警配置列表")
-    @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public Result alarmList(JwtAccount account,
-                            @RequestParam(required = false, defaultValue = "1") int pageNum,
-                            @RequestParam(required = false, defaultValue = "10") int pageSize,
-                            String deviceModel) {
+    @GetMapping(value = "/list")
+    public BaseTip alarmList(JwtAccount account,
+                             @RequestParam(required = false, defaultValue = "1") int pageNum,
+                             @RequestParam(required = false, defaultValue = "10") int pageSize,
+                             String deviceModel) {
         Map<String, Object> params = new HashMap<>();
         params.put("deviceModel", StringUtils.trimToNull(deviceModel));
         Page<Object> pageInfo = PageHelper.startPage(pageNum, pageSize, "create_time desc");
         List<DeviceAlarmConfig> deviceAlarmConfigs = alarmService.getAlarmConfig(account, params);
-        return Result.ok().put("alarms", deviceAlarmConfigs)
-                .put("totalNum", pageInfo.getTotal());
+        Map<String, Object> result = new HashMap<>();
+        result.put("alarms", deviceAlarmConfigs);
+        result.put("totalNum", pageInfo.getTotal());
+        return new SuccessTip<>(result);
 
     }
 
@@ -74,8 +80,8 @@ public class AlarmController {
      * @return
      */
     @ApiOperation("获取设备告警列表")
-    @RequestMapping(value = "/deviceAlarmList", method = RequestMethod.GET)
-    public Result deviceAlarmList(JwtAccount account,
+    @GetMapping(value = "/deviceAlarmList")
+    public BaseTip deviceAlarmList(JwtAccount account,
             @RequestParam(required = false, defaultValue = "1") int pageNum,
             @RequestParam(required = false, defaultValue = "10") int pageSize,
             String deviceModel, String deviceSn, String startTime, String endTime, String conditions) {
@@ -89,15 +95,17 @@ public class AlarmController {
             }
 
         } catch (ParseException e) {
-            return Result.error("错误的起止时间");
+            return new ErrorTip(CfgResultCode.ALARM_START_AND_END);
         }
         params.put("deviceModel", StringUtils.trimToNull(deviceModel));
         params.put("deviceSn", StringUtils.trimToNull(deviceSn));
         params.put("conditions", StringUtils.trimToNull(conditions));
         Page<Object> pageInfo = PageHelper.startPage(pageNum, pageSize, "create_time desc");
         List<ExceptionAlarm> deviceAlarmList = alarmService.deviceAlarmList(account, params);
-        return Result.ok().put("deviceAlarmList", deviceAlarmList)
-                .put("totalNum", pageInfo.getTotal());
+        Map<String, Object> result = new HashMap<>();
+        result.put("deviceAlarmList", deviceAlarmList);
+        result.put("totalNum", pageInfo.getTotal());
+        return new SuccessTip<>(result);
     }
 
 
@@ -108,21 +116,19 @@ public class AlarmController {
      */
     @ApiOperation("新增告警配置")
     @PostMapping(value = "/add")
-    public Result addAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
-        alarmConfig.setDeviceSn(StringUtils.trimToNull(alarmConfig.getDeviceSn()));
+    public BaseTip addAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
         if(alarmConfig.getDeviceModel() != null){
             DeviceModel deviceModel = deviceModelService.viewDetail(alarmConfig.getDeviceModel());
             if(deviceModel == null){
-                return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
+                return new ErrorTip(CfgResultCode.DEVICE_MODEL_NOT_EXIST);
             }
         }
 
         if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
-            return Result.error("描述字段包含空格");
+            return new ErrorTip(CfgResultCode.ALARM_DESCRIPTION_EMPTY);
         }
         String alarmId = alarmService.addAlarmConfig(account, alarmConfig);
-        return alarmId != null ? Result.ok().put("alarmId", alarmId) : Result
-                .error("新增告警失败！");
+        return alarmId != null ? new SuccessTip("告警配置添加成功") : new ErrorTip(CfgResultCode.ALARM_CFG_ADD);
     }
 
     /**
@@ -132,19 +138,18 @@ public class AlarmController {
      */
     @ApiOperation("更新告警配置")
     @PutMapping(value = "/update")
-    public Result updateAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
+    public BaseTip updateAlarm(JwtAccount account, @RequestBody DeviceAlarmConfig alarmConfig) {
         if(alarmConfig.getDeviceModel() != null){
             DeviceModel deviceModel = deviceModelService.viewDetail(alarmConfig.getDeviceModel());
             if(deviceModel == null){
-                return Result.error("设备型号：" + alarmConfig.getDeviceModel() + "不存在");
+                return new ErrorTip(CfgResultCode.DEVICE_MODEL_NOT_EXIST);
             }
         }
         if(alarmConfig.getDescription() != null && alarmConfig.getDescription().trim().length()==0){
-            return Result.error("描述字段包含空格");
+            return new ErrorTip(CfgResultCode.ALARM_DESCRIPTION_EMPTY);
         }
-
         boolean success = alarmService.updateAlarmConfig(account, alarmConfig);
-        return success ? Result.ok() : Result.error("告警配置更新失败");
+        return success ? new SuccessTip("告警配置更新成功") : new ErrorTip(CfgResultCode.ALARM_CFG_UPDATE);
     }
 
     /**
@@ -154,10 +159,9 @@ public class AlarmController {
      */
     @ApiOperation("删除告警配置")
     @DeleteMapping(value = "/delete/{alarmId}")
-    public Result deleteAlarm(@PathVariable("alarmId") String alarmId) {
-
+    public BaseTip deleteAlarm(@PathVariable("alarmId") String alarmId) {
         boolean success = alarmService.deleteAlarmConfig(alarmId);
-        return success ? Result.ok() : Result.error("删除告警失败！");
+        return success ? new SuccessTip("告警配置删除成功") : new ErrorTip(CfgResultCode.ALARM_CFG_DELETE);
     }
 
 
@@ -168,25 +172,37 @@ public class AlarmController {
      */
     @ApiOperation("获取最新告警配置")
     @GetMapping(value = "/getAlarmCfg")
-    public Result getAlarmCfgInfo(HttpServletResponse response) {
+    public BaseTip getAlarmCfgInfo(HttpServletResponse response) {
         response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
-        return Result.ok().put("guard", alarmService.getAlarmConfig(null, new HashMap<>()));
+        return new SuccessTip<>(alarmService.getAlarmConfig(null, new HashMap<>()));
     }
 
 
     /**
      * 根据设备类型获取告警属性
      *
-     * @return Result
+     * @return BaseTip
      */
-    @ApiOperation("根据设备类型获取告警属性")
-    @GetMapping(value = "/getAttributeListByType/{category}")
-    public Result getAttributeListByCategory(JwtAccount account, @PathVariable String category) {
-        if(StringUtils.isEmpty(category)){
-            return Result.error("设备型号不能为空");
+    @ApiOperation("获取告警属性-感知")
+    @ApiImplicitParams({
+            @ApiImplicitParam(paramType = "query", name = "deviceModel", value = "设备型号", required = true)
+    })
+    @GetMapping(value = "/getAttributeListByType")
+    public BaseTip getAttributeListByCategory(JwtAccount account, @RequestParam("deviceModel") String deviceModel) {
+        if(StringUtils.isEmpty(deviceModel)){
+            return new ErrorTip(CfgResultCode.DEVICE_MODEL_EMPTY);
         }
-        List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(account, category);
-        return Result.ok().put("attributeList", attributeList);
+        List<ThingModelField> attributeList = thingModelService.listSensoryThingModelFieldByDeviceModel(account, deviceModel);
+        return new SuccessTip<>(attributeList);
 
+    }
+
+    /**
+     * 告警类型
+     * */
+    @ApiOperation("告警类型")
+    @GetMapping(value = "/alarmTypeList")
+    public BaseTip alarmTypeList(){
+        return new SuccessTip<>(alarmService.alarmTypeList());
     }
 }

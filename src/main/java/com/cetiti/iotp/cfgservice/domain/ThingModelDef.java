@@ -3,6 +3,8 @@ package com.cetiti.iotp.cfgservice.domain;
 
 import com.cetiti.ddapv2.iotplatform.common.StoreTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
+import com.cetiti.iotp.cfgservice.domain.BaseDomain;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Preconditions;
 import io.swagger.annotations.ApiModel;

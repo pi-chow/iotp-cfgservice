@@ -13,14 +13,14 @@ import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.ThingModelField;
 import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
-import com.cetiti.iotp.itf.platformservice.DeviceModelService;
-import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
+import com.cetiti.iotp.itf.assetservice.DeviceModelService;
+import com.cetiti.iotp.itf.assetservice.vo.DeviceModel;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
@@ -53,7 +53,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
 
-	@Reference
+    @Reference
     private DeviceModelService deviceModelService;
 
 	@Autowired
@@ -76,7 +76,9 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		logger.debug("Publis all model, account[{}].", account);
 
-		List<ThingModelDef> modelList = modelDefMapper.modelList(DevUser.isDeveloper(account), null);
+		String userId = DevUser.isDeveloper(account);
+
+		List<ThingModelDef> modelList = modelDefMapper.modelList(userId, null);
         List<ThingModelDef> failure = Lists.newArrayList();
 
 		if (modelList == null || modelList.size() == 0) {
@@ -103,6 +105,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
+            modelProcessor.packageAll();
             return failure;
         }else {
             // -- 打包
@@ -337,6 +340,14 @@ public class ThingModelServiceImpl implements ThingModelService {
 		return modelDefMapper.deleteTemplateByDeviceModelId(templateId) > 0;
 	}
 
+	@Deprecated
+	@Override
+	public List<String> getThingModelType(JwtAccount account, String deviceModel) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        String userId = DevUser.isDeveloper(account);
+        return modelDefMapper.getThingModelType(userId, deviceModel);
+	}
+
 	/**
 	 * 新增模型字段列表
 	 * 
@@ -422,7 +433,21 @@ public class ThingModelServiceImpl implements ThingModelService {
 		return fieldMapper.listSensoryThingModelFieldByDeviceModel(userId, deviceModel);
 	}
 
-	@Override
+    /**
+     * 根据设备型号获取模型属性
+     * @param account 用户
+     * @param deviceModel 设备型号
+     * @param thingModelName 协议模型名
+     * */
+    @Override
+    public List<ThingModelField> listThingModelFieldByDeviceModel(JwtAccount account, String deviceModel, String thingModelName) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
+        Preconditions.checkArgument(StringUtils.isNotBlank(thingModelName));
+        String userId = DevUser.isDeveloper(account);
+        return fieldMapper.listThingModelFieldByDeviceModel(userId, deviceModel, thingModelName);
+    }
+
+    @Override
 	public List<String> getUsableStoreType(String dataType) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(dataType));
 		return DataTypeStoreTypeRelation.getStoreType(dataType);
