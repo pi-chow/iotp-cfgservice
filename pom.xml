@@ -3,8 +3,8 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<artifactId>iotp-parent</artifactId>
 		<groupId>com.cetiti.iotp</groupId>
+		<artifactId>iotp-parent</artifactId>
 		<version>0.8.0-SNAPSHOT</version>
 	</parent>
 
@@ -12,22 +12,32 @@
 	<version>0.8.0-SNAPSHOT</version>
 	<description>Configuration Management Service</description>
 
-	<dependencies>
-		<!--SpringBoot -->
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://maven.d.com/repository/public/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
-		<!--MySQL -->
+	<dependencies>
+
 		<dependency>
 			<groupId>org.mybatis.spring.boot</groupId>
 			<artifactId>mybatis-spring-boot-starter</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
 		<dependency>
 			<groupId>com.github.pagehelper</groupId>
 			<artifactId>pagehelper-spring-boot-starter</artifactId>
 			<version>1.2.3</version>
 		</dependency>
 
-		<!--common -->
 		<dependency>
 			<groupId>com.squareup</groupId>
 			<artifactId>javapoet</artifactId>
@@ -35,33 +45,17 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-redis</artifactId>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
 		</dependency>
+
 		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
+			<groupId>xiaojian.toolkit</groupId>
+			<artifactId>xt-bean-bytebean</artifactId>
+			<version>2.1.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-webmvc</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-test</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-commons</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-redis</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-data-redis</artifactId>
-		</dependency>
+
 		<dependency>
 			<groupId>com.cetiti.iotp</groupId>
 			<artifactId>iotp-common</artifactId>
@@ -73,19 +67,17 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
 		<dependency>
-			<groupId>xiaojian.toolkit</groupId>
-			<artifactId>xt-bean-bytebean</artifactId>
-			<version>2.1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
-			<version>2.5</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -113,6 +105,48 @@
 						<exclude>**/*.properties</exclude>
 						<exclude>logback.xml</exclude>
 					</excludes>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+                    <useBaseVersion>true</useBaseVersion>
+                    <artifactItems>
+						<artifactItem>
+							<groupId>org.apache.commons</groupId>
+							<artifactId>commons-lang3</artifactId>
+							<version>3.8.1</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>xiaojian.toolkit</groupId>
+							<artifactId>xt-bean-bytebean</artifactId>
+							<version>2.1.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>xiaojian.toolkit</groupId>
+							<artifactId>xt-util</artifactId>
+							<version>2.2.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+						<artifactItem>
+							<groupId>com.cetiti.iotp</groupId>
+							<artifactId>iotp-common</artifactId>
+							<version>0.8.0-SNAPSHOT</version>
+							<outputDirectory>./build-libs</outputDirectory>
+						</artifactItem>
+					</artifactItems>
 				</configuration>
 			</plugin>
 			<!-- Assembly插件帮你构建一个完整的发布包.如:创建一个包含脚本、配置文件以及所有运行时所依赖的元素（jar）的zip压缩包 -->

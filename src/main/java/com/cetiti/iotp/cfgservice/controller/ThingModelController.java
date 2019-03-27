@@ -65,7 +65,7 @@ public class ThingModelController {
 
 	/**
 	 * 添加模型
-	 * @param account TODO
+	 * @param account
 	 * @param model
 	 *
 	 * @return
@@ -88,7 +88,7 @@ public class ThingModelController {
 
 	/**
 	 * 添加物模型,从一个已知的物模型添加.
-	 * @param account TODO
+	 * @param account
 	 * @param modelTemplateId
 	 *            已知的物模型
 	 * 
@@ -230,7 +230,7 @@ public class ThingModelController {
 
 	/**
 	 * 发布所有已知的模型。
-	 * @param account TODO
+	 * @param account
 	 */
 	@ApiOperation(value = "发布所有已经配置的模型")
 	@GetMapping(value = "/publish")

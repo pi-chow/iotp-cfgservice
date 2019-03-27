@@ -1,17 +1,15 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.DataTypeStoreTypeRelation;
 import com.cetiti.ddapv2.iotplatform.common.StoreTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
+import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
-import com.cetiti.iotp.cfgservice.common.id.UniqueIdGenerator;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
@@ -21,6 +19,8 @@ import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
+import com.cetiti.iotp.itf.platformservice.DeviceModelService;
+import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.base.Preconditions;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  *
  * @author zhouliyu
  */
-@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class)
+@org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class, timeout = 6000)
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 
@@ -62,8 +62,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private ThingModelProcessor modelProcessor;
 
-	@Autowired
-	private UniqueIdGenerator uniqueIdGenerator;
 
 	@Autowired
 	private CfgZkClient cfgZkClient;
@@ -188,7 +186,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 		// -- 修改为新型号Id。
 		for (ThingModelDef templateThingModelDef : templateThingModelDefs) {
-			templateThingModelDef.setThingModelId(uniqueIdGenerator.generateModelId());
+			templateThingModelDef.setThingModelId(GenerationSequenceUtil.uuid());
 			templateThingModelDef.setDeviceModel(deviceModel.deviceModel);
 			templateThingModelDef.setDeviceModelName(deviceModel.deviceModelName);
 			templateThingModelDef.setDeviceModelId(deviceModel.deviceModelId);
@@ -231,7 +229,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 			}
 		}
 
-		model.setThingModelId(uniqueIdGenerator.generateModelId());
+		model.setThingModelId(GenerationSequenceUtil.uuid());
 		model.setCreateTime(new Date());
 		model.setModifyTime(new Date());
 		model.setCreateUser(account.getUserId());

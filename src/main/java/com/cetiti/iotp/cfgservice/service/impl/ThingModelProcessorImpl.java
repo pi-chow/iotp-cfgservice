@@ -1,7 +1,5 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
-import com.cetiti.ddapv2.iotplatform.biz.domain.DeviceModel;
-import com.cetiti.ddapv2.iotplatform.biz.service.DeviceModelService;
 import com.cetiti.ddapv2.iotplatform.common.*;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
@@ -10,6 +8,8 @@ import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.enums.CustomTypeEnum;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
+import com.cetiti.iotp.itf.platformservice.DeviceModelService;
+import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.squareup.javapoet.*;
