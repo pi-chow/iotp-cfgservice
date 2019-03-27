@@ -41,4 +41,7 @@ public interface ThingModelFieldMapper {
      * 根据设备型号获取物模型感知属性。
      */
     List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(@Param("userId") String userId, @Param("deviceModel") String deviceModel);
+
+
+    List<ThingModelField> listThingModelFieldByDeviceModel(@Param("userId") String userId, @Param("deviceModel") String deviceModel, @Param("thingModelType") String thingModelType);
 }

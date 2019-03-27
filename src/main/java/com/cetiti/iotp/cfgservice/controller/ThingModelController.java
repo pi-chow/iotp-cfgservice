@@ -2,7 +2,10 @@ package com.cetiti.iotp.cfgservice.controller;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
-import com.cetiti.iotp.cfgservice.common.result.Result;
+import com.cetiti.ddapv2.iotplatform.common.tip.BaseTip;
+import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
+import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;
+import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
@@ -24,7 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -45,9 +50,9 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "根据设备编号获取模型列表")
 	@GetMapping(value = "/list/{deviceModelId}")
-	public Result modelList(@PathVariable("deviceModelId") String deviceId) {
+	public BaseTip modelList(@PathVariable("deviceModelId") String deviceId) {
 		List<ThingModelDef> modelList = modelService.modelListByDeviceModelId(deviceId);
-		return Result.ok().put("modelList", modelList);
+		return new SuccessTip<>(modelList);
 	}
 
 	/**
@@ -58,9 +63,9 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "根据模型编号获取模型")
 	@GetMapping(value = "/{thingModelId}")
-	public Result modelViewById(@PathVariable("thingModelId") String modelDefId) {
+	public BaseTip modelViewById(@PathVariable("thingModelId") String modelDefId) {
 		ThingModelDef model = modelService.modelViewById(modelDefId);
-		return Result.ok().put("model", model);
+		return new SuccessTip<>(model);
 	}
 
 	/**
@@ -72,18 +77,18 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "添加物模型")
 	@PostMapping(value = "/add")
-	public Result modelAdd(JwtAccount account, @RequestBody ThingModelDef model) {
+	public BaseTip modelAdd(JwtAccount account, @RequestBody ThingModelDef model) {
 		if (StringUtils.isEmpty(model.getDeviceModelId())) {
-			return Result.error("设备型号ID为空");
+			return new ErrorTip(CfgResultCode.DEVICE_MODEL_EMPTY);
 		}
 		if (StringUtils.isEmpty(model.getStoreTypes())) {
-			return Result.error("存储类型为空");
+			return new ErrorTip(CfgResultCode.THING_MODEL_STORE_TYPE_EMPTY);
 		}
 		if (StringUtils.isEmpty(model.getStructType())) {
-			return Result.error("设备结构类型为空");
+			return new ErrorTip(CfgResultCode.THING_MODEL_STRUCT_TYPE_EMPTY);
 		}
 		String modelId = modelService.addModel(model, account);
-		return modelId != null ? Result.ok().put("modelId", modelId) : Result.error("新增模型失败，得不到设备模型ID。");
+		return modelId != null ? new SuccessTip(modelId) :new ErrorTip(CfgResultCode.THING_MODEL_ADD);
 	}
 
 	/**
@@ -96,13 +101,18 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "从模板添加物模型")
 	@GetMapping(value = "/addFromTemplate")
-	public Result modelAddFromTemplate(JwtAccount account,
-			@RequestParam("templateId") String modelTemplateId, @RequestParam("deviceModelId") String deviceModelId) {
+	public BaseTip modelAddFromTemplate(JwtAccount account,
+			@RequestParam("templateId") String modelTemplateId,
+			@RequestParam("deviceModelId") String deviceModelId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(modelTemplateId));
 		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelId));
 
-		modelService.addModelFromTemplate(modelTemplateId, deviceModelId, account);
-		return Result.ok("模板创建成功。");
+		try {
+			modelService.addModelFromTemplate(modelTemplateId, deviceModelId, account);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
+		return new SuccessTip("模板创建成功");
 	}
 
 	/**
@@ -112,8 +122,8 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "获取消息结构类型")
 	@GetMapping(value = "/get/structType")
-	public Result strutType() {
-		return Result.ok().put("structTypeList", modelService.strutType());
+	public BaseTip strutType() {
+		return new SuccessTip<>(modelService.strutType());
 	}
 
 	/**
@@ -123,8 +133,8 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "获取消息存储类型")
 	@GetMapping(value = "/get/storeType")
-	public Result storeType() {
-		return Result.ok().put("structTypeList", modelService.storeTypes());
+	public BaseTip storeType() {
+		return new SuccessTip<>(modelService.storeTypes());
 	}
 	
 	/**
@@ -134,8 +144,8 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "获取消息存储类型")
 	@GetMapping(value = "/get/strutType")
-	public Result userDefStrutType() {
-		return Result.ok().put("structTypeList", modelService.storeTypes());
+	public BaseTip userDefStrutType() {
+		return new SuccessTip<>(modelService.storeTypes());
 	}
 
 	/**
@@ -145,8 +155,8 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "获取消息存储类型")
 	@GetMapping(value = "/get/availableStoreType/{dataType}")
-	public Result availableStoreType(@PathVariable("dataType") String dataType) {
-		return Result.ok().put("availableStoreTypeList", modelService.getUsableStoreType(dataType));
+	public BaseTip availableStoreType(@PathVariable("dataType") String dataType) {
+		return new SuccessTip<>(modelService.getUsableStoreType(dataType));
 	}
 
 	/**
@@ -157,14 +167,18 @@ public class ThingModelController {
 	 * @return
 	 */
 	@GetMapping(value = "/template/get")
-	public Result templateModelView(JwtAccount account,
+	public BaseTip templateModelView(JwtAccount account,
 									@RequestParam(required = false) String deviceModel,
                                     @RequestParam(required = false) String deviceModelName,
                                     @RequestParam(required = false, defaultValue = "1") int pageNum,
                                     @RequestParam(required = false, defaultValue = "10") int pageSize) {
 		PageInfo<ThingModelDef> pageInfo = modelService.templateModelView(account, deviceModel, deviceModelName, pageNum, pageSize);
 
-		return Result.ok().put("total", pageInfo.getTotal()).put("lst", pageInfo.getList());
+		Map<String, Object> result = new HashMap<>();
+		result.put("total", pageInfo.getTotal());
+		result.put("templateList", pageInfo.getList());
+
+		return new SuccessTip<>(result);
 	}
 	
 	/**
@@ -174,23 +188,30 @@ public class ThingModelController {
 	 * @return
 	 */
 	@GetMapping(value = "/template/add/{deviceModelId}")
-	public Result templateModelAddd(JwtAccount account, @PathVariable("deviceModelId") String deviceModelId) {
-		modelService.makeTemplate(deviceModelId, account);
-
-		return Result.ok("设备模型作为模板成功。");
+	public BaseTip templateModelAdd(JwtAccount account, @PathVariable("deviceModelId") String deviceModelId) {
+		try {
+			modelService.makeTemplate(deviceModelId, account);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
+		return new SuccessTip("设备模型作为模板成功");
 	}
 
 	/**
-	 * 删除一个模板。templateId
+	 * 删除一个模板
 	 * 
-	 * @param templateId
+	 * @param templateId 模板id
 	 * @return
 	 */
 	@DeleteMapping(value = "/template/del/{templateId}")
-	public Result templateModelDelete(@PathVariable("templateId") String templateId) {
-		boolean success = modelService.deleteTemplate(templateId);
-		return success ? Result.ok("删除模板成功") : Result.error("删除模板失败");
-
+	public BaseTip templateModelDelete(@PathVariable("templateId") String templateId) {
+		boolean success;
+		try {
+			success = modelService.deleteTemplate(templateId);
+		}catch (BizLocaleException e){
+			return new ErrorTip(e.getErrorCode());
+		}
+		return success ? new SuccessTip("删除模板成功") : new ErrorTip(CfgResultCode.THING_MODEL_TEMPLATE_DELETE);
 	}
 
 	/**
@@ -201,19 +222,19 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "更新模型")
 	@PutMapping(value = "/update")
-	public Result modelUpdate(JwtAccount account, @RequestBody ThingModelDef model) {
+	public BaseTip modelUpdate(JwtAccount account, @RequestBody ThingModelDef model) {
 		if (StringUtils.isEmpty(model.getDeviceModelId())) {
-			return Result.error("设备型号ID为空");
+			return new ErrorTip(CfgResultCode.DEVICE_MODEL_EMPTY);
 		}
 		if (StringUtils.isEmpty(model.getStoreTypes())) {
-			return Result.error("存储类型为空");
+			return new ErrorTip(CfgResultCode.THING_MODEL_STORE_TYPE_EMPTY);
 		}
 		if (StringUtils.isEmpty(model.getStructType())) {
-			return Result.error("设备结构类型为空");
+			return new ErrorTip(CfgResultCode.THING_MODEL_STRUCT_TYPE_EMPTY);
 		}
 
 		boolean success = modelService.updateModel(account, model);
-		return success ? Result.ok("更新模型成功") : Result.error("更新模型失败");
+		return success ? new SuccessTip("更新模型成功") : new ErrorTip(CfgResultCode.THING_MODEL_UPDATE);
 	}
 
 	/**
@@ -222,10 +243,10 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "删除模型")
 	@DeleteMapping(value = "/delete/{thingModelId}")
-	public Result modelDelete(@PathVariable("thingModelId") String modelId) {
+	public BaseTip modelDelete(@PathVariable("thingModelId") String modelId) {
 		modelProcessor.deleteModelFile(modelId);
 		boolean success = modelService.deleteModel(modelId);
-		return success ? Result.ok("删除模型成功") : Result.error("删除模型失败");
+		return success ? new SuccessTip("删除模型成功") : new ErrorTip(CfgResultCode.THING_MODEL_DELETE);
 	}
 
 	/**
@@ -234,20 +255,21 @@ public class ThingModelController {
 	 */
 	@ApiOperation(value = "发布所有已经配置的模型")
 	@GetMapping(value = "/publish")
-	public Result modelPublish(JwtAccount account) {
+	public BaseTip modelPublish(JwtAccount account) {
 		List<ThingModelDef> failure = Lists.newArrayList();
 		try {
 			failure = modelService.allModelPublish(account);
 		} catch (BizLocaleException exception) {
-			return Result.error(exception.getErrorCode());
+			return new ErrorTip(exception.getErrorCode());
 		}
 
 		if (failure == null || failure.size() == 0) {
-			return Result.ok("所有模型发布成功");
+			return new SuccessTip("所有模型发布成功");
 		}
 
-		return Result.error("以下型号的模型发布失败[" + failure.stream().map(e -> {
-			return e.getDeviceModel();
+		return new ErrorTip(CfgResultCode.THING_MODEL_PUBLISH.getResultCode(),
+				"以下型号的模型发布失败[" + failure.stream().map(e -> {
+						return e.getDeviceModel();
 		}).collect(Collectors.joining(",")) + "]");
 	}
 

@@ -8,8 +8,8 @@ import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.enums.CustomTypeEnum;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
-import com.cetiti.iotp.itf.platformservice.DeviceModelService;
-import com.cetiti.iotp.itf.platformservice.vo.DeviceModel;
+import com.cetiti.iotp.itf.assetservice.DeviceModelService;
+import com.cetiti.iotp.itf.assetservice.vo.DeviceModel;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.squareup.javapoet.*;
@@ -193,7 +193,7 @@ public class ThingModelProcessorImpl implements ThingModelProcessor {
 		if (deviceModel == null) {
 			LOGGER.error("Cannot get deviceModel by modelId[" + model.getDeviceModelId() + "], model["
 					+ model.getDeviceModel() + "]");
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_MISS);
+			throw new BizLocaleException(CfgResultCode.DEVICE_MODEL_NOT_EXIST);
 		}
 
 		List<ThingModelField> fields = model.getFields();

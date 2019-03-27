@@ -8,6 +8,7 @@ import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 设备协议模型服务
@@ -124,7 +125,17 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
      * @return 消息存储类型。
      */
     List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel);
-    
+
+    /**
+     * 根据设备型号获取模型属性
+     * @param account 用户
+     * @param deviceModel 设备型号
+     * @param thingModelName 协议模型名
+     * */
+    List<ThingModelField> listThingModelFieldByDeviceModel(JwtAccount account, String deviceModel, String thingModelName);
+
+
+
     /**
      * 物模型模板分页。
      * 
@@ -141,5 +152,12 @@ public interface ThingModelService extends com.cetiti.iotp.itf.cfgservice.ThingM
      * @return
      */
     boolean deleteTemplate(String templateId);
+
+    /**
+     * 根据设备型号获取协议模型类型
+     * @param account 用户
+     * @param deviceModel 设备型号
+     * */
+    List<String> getThingModelType(JwtAccount account, String deviceModel);
 
 }

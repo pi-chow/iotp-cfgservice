@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper">
+    <resultMap id="ThingModelFieldMap" type="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField">
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="label" jdbcType="VARCHAR" property="label"/>
+        <result column="unit" jdbcType="VARCHAR" property="unit"/>
+    </resultMap>
+
     <insert id="add"
             parameterType="com.cetiti.iotp.cfgservice.domain.ThingModelField"
             useGeneratedKeys="true" keyProperty="id">
@@ -32,9 +38,9 @@
     </select>
 
     <select id="listSensoryThingModelFieldByDeviceModel"
-            resultType="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField">
+            resultMap="ThingModelFieldMap">
         SELECT
-        tmf.*
+        tmf.name, tmf.label, tmf.unit
         FROM
         t_thing_model_field tmf
         LEFT JOIN t_thing_model tm ON tmf.thing_model_id =
@@ -45,6 +51,27 @@
         <if test="deviceModel != null">
             AND tm.device_model = #{deviceModel}
         </if>
+    </select>
+
+    <select id="listThingModelFieldByDeviceModel"
+            resultType="com.cetiti.iotp.cfgservice.domain.ThingModelField">
+        SELECT
+        tmf.name, tmf.label, tmf.unit
+        FROM
+        t_thing_model_field tmf
+        LEFT JOIN t_thing_model tm ON tmf.thing_model_id =
+        tm.thing_model_id
+        <where>
+            <if test="userId != null">
+                AND tm.create_user = #{userId}
+            </if>
+            <if test="deviceModel != null">
+                AND tm.device_model = #{deviceModel}
+            </if>
+            <if test="thingModelType != null">
+                AND tm.thing_model_type = #{thingModelType}
+            </if>
+        </where>
     </select>
 
 </mapper>
