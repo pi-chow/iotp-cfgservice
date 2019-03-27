@@ -3,8 +3,8 @@ package com.cetiti.iotp.cfgservice.service;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.ThingModelField;
 import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.github.pagehelper.PageInfo;
 
 import java.util.List;

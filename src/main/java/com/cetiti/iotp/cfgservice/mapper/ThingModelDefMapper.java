@@ -1,8 +1,9 @@
 package com.cetiti.iotp.cfgservice.mapper;
 
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
+
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 
 import java.util.List;
 import java.util.Map;
