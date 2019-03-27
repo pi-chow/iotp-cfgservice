@@ -26,8 +26,8 @@
         </root>
     </springProfile>
 
-    <!--prod-->
-    <springProfile name="prod">
+    <!--demo-->
+    <springProfile name="demo">
         <root level="INFO">
             <appender-ref ref="STDOUT"/>
             <appender-ref ref="FILE"/>
