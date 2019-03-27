@@ -2,7 +2,6 @@ package com.cetiti.iotp.cfgservice.controller;
 
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
-import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.tip.BaseTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
 import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;

@@ -15,6 +15,7 @@ public class CfgServiceApplication {
 	private static final Logger logger = LoggerFactory.getLogger(CfgServiceApplication.class);
 
 	public static void main(String[] args) {
+		System.setProperty("dubbo.application.logger","slf4j");
 		SpringApplication.run(CfgServiceApplication.class, args);
 		logger.info("iotp-cfg service startup successful");
 	}
