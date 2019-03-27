@@ -31,7 +31,9 @@ public class AlarmServiceTest {
         alarmConfig.setField("attribute1");
         JwtAccount account = new JwtAccount();
         account.setUserId("111");
-        alarmService.addAlarmConfig(account, alarmConfig);
+        alarmConfig.setDescription("1111");
+        alarmConfig.setAlarmType("offline");
+        alarmService.updateAlarmConfig(account, alarmConfig);
     }
 
 }

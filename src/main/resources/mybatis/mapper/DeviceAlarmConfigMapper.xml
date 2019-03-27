@@ -77,15 +77,11 @@
                 <if test="threshold != null">
                     threshold = #{threshold,jdbcType=VARCHAR},
                 </if>
-                <if test="alarmLevel != null">
                     alarm_Level = #{alarmLevel,jdbcType=TINYINT},
-                </if>
                 <if test="alarmType != null">
                     alarm_type = #{alarmType,jdbcType=VARCHAR},
                 </if>
-                <if test="description != null">
-                    description = #{description,jdbcType=VARCHAR},
-                </if>
+                   description = #{description,jdbcType=VARCHAR},
                 <if test="modifyTime != null">
                     modify_time = #{modifyTime,jdbcType=TIMESTAMP},
                 </if>
