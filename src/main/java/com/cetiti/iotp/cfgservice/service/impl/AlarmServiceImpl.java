@@ -3,13 +3,13 @@ package com.cetiti.iotp.cfgservice.service.impl;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
+import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.AlarmType;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
 import com.cetiti.iotp.cfgservice.enums.AlarmTypeEnum;
 import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
-import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
@@ -28,8 +28,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 /**
  * 告警服务实现。
@@ -211,6 +209,8 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public List<ExceptionAlarm> deviceAlarmList(JwtAccount account, Map<String, Object> params) {
+        String userId = DevUser.isDeveloper(account);
+        params.put("userId", userId);
         return alarmMapper.deviceAlarmList(params);
     }
 

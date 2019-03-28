@@ -5,6 +5,7 @@
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="label" jdbcType="VARCHAR" property="label"/>
         <result column="unit" jdbcType="VARCHAR" property="unit"/>
+        <result column="customType" jdbcType="VARCHAR" property="customType"/>
     </resultMap>
 
     <insert id="add"
@@ -40,7 +41,7 @@
     <select id="listSensoryThingModelFieldByDeviceModel"
             resultMap="ThingModelFieldMap">
         SELECT
-        tmf.name, tmf.label, tmf.unit
+        tmf.name, tmf.label, tmf.unit, tmf.custom_type
         FROM
         t_thing_model_field tmf
         LEFT JOIN t_thing_model tm ON tmf.thing_model_id =
