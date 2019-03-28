@@ -21,7 +21,7 @@ cd iotp-cfgservice
 mvn clean package
 
 ```
-####服务器地址
+#### 服务器地址
 
 ##### 开发环境
 * 服务器端口：10.0.40.185:8083
