@@ -3,9 +3,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-    <id>cli</id>
-    <!-- 1.打包的文件格式 -->
+    <id>${project.version}-${package.type}</id>
     <formats>
+        <format>tar</format>
         <format>zip</format>
     </formats>
 
@@ -23,12 +23,11 @@
         </fileSet>
 
         <fileSet>
-            <directory>src/main/resources</directory>
+            <directory>target/classes</directory>
             <outputDirectory>config</outputDirectory>
             <includes>
                 <include>application.properties</include>
-                <include>application-dev.properties</include>
-                <include>application-demo.properties</include>
+                <include>application-${pom.env}.properties</include>
             </includes>
         </fileSet>
 
@@ -44,9 +43,7 @@
             <directory>scripts/bin</directory>
             <outputDirectory>.</outputDirectory>
             <includes>
-                <include>start.sh</include>
-                <include>stop.sh</include>
-                <include>run.sh</include>
+                <include>*.sh</include>
             </includes>
         </fileSet>
 

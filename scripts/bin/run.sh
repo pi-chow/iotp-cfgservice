@@ -1,5 +1,7 @@
-#!/bin/sh
+#!/usr/bin/env bash
 ## java env
+export BASH_ENV=/etc/profile
+
 API_NAME=iotp-cfgservice
 JAR_NAME=${API_NAME}.jar
 #PID  代表是PID文件

@@ -4,6 +4,7 @@ import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.iotp.cfgservice.domain.AlarmType;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
+import com.cetiti.iotp.cfgservice.domain.vo.DeviceAlarmConfigVo;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.google.common.collect.Lists;
 
@@ -46,5 +47,10 @@ public interface AlarmService extends com.cetiti.iotp.itf.cfgservice.AlarmServic
 	 *获取告警类型
 	 * */
 	List<AlarmType> alarmTypeList();
+
+	/**
+	 * 获取设备告警配置列表
+	 * */
+	List<DeviceAlarmConfigVo> getAlarmConfigToException(String alarmType);
 
 }
