@@ -177,24 +177,7 @@ public class AlarmController {
     @GetMapping(value = "/getAlarmCfg")
     public BaseTip getAlarmCfgInfo(HttpServletResponse response) {
         response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
-        Map<String, Object> map = new HashMap<>();
-        map.put("alarmType", AlarmTypeEnum.SENSORY.getValue());
-        List<DeviceAlarmConfig> alarmConfigList = alarmService.getAlarmConfig(null, new HashMap<>());
-        List<DeviceAlarmConfigVo> alarmConfigVos = new ArrayList<>();
-        for (DeviceAlarmConfig deviceAlarmConfig : alarmConfigList){
-            StringBuilder conditions = new StringBuilder();
-            conditions.append(deviceAlarmConfig.getField())
-                    .append(deviceAlarmConfig.getRelation())
-                    .append(deviceAlarmConfig.getThreshold());
-            DeviceAlarmConfigVo alarmConfigVo = new DeviceAlarmConfigVo();
-            alarmConfigVo.setDeviceModel(deviceAlarmConfig.getDeviceModel());
-            alarmConfigVo.setConditions(conditions.toString());
-            alarmConfigVo.setField(deviceAlarmConfig.getField());
-            alarmConfigVo.setDescription(deviceAlarmConfig.getDescription());
-            alarmConfigVo.setCreateUser(deviceAlarmConfig.getCreateUser());
-            alarmConfigVos.add(alarmConfigVo);
-        }
-        return new SuccessTip<>(alarmConfigVos);
+        return new SuccessTip<>(alarmService.getAlarmConfigToException(AlarmTypeEnum.SENSORY.getValue()));
     }
 
 

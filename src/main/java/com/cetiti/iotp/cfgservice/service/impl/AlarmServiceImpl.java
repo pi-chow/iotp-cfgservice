@@ -8,6 +8,7 @@ import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.AlarmType;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
+import com.cetiti.iotp.cfgservice.domain.vo.DeviceAlarmConfigVo;
 import com.cetiti.iotp.cfgservice.enums.AlarmTypeEnum;
 import com.cetiti.iotp.cfgservice.mapper.AlarmMapper;
 import com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper;
@@ -125,7 +126,7 @@ public class AlarmServiceImpl implements AlarmService {
 
     /**
      * 获取告警配置列表
-     * TODO 提供condtion字段
+     *
      * @returns
      */
     @Override
@@ -139,6 +140,7 @@ public class AlarmServiceImpl implements AlarmService {
 
         return deviceAlarmConfigMapper.searchDeviceAlarmConfig(params);
     }
+
 
     /**
      * 拉取设备配置文件
@@ -201,6 +203,31 @@ public class AlarmServiceImpl implements AlarmService {
             alarmTypes.add(alarmType);
         }
         return alarmTypes;
+    }
+
+    /**
+     * 设备异常告警配置
+     * */
+    @Override
+    public List<DeviceAlarmConfigVo> getAlarmConfigToException(String alarmType) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("alarmType", alarmType);
+        List<DeviceAlarmConfig> alarmConfigList = getAlarmConfig(null, map);
+        List<DeviceAlarmConfigVo> alarmConfigVos = new ArrayList<>();
+        for (DeviceAlarmConfig deviceAlarmConfig : alarmConfigList){
+            StringBuilder conditions = new StringBuilder();
+            conditions.append(deviceAlarmConfig.getField())
+                    .append(deviceAlarmConfig.getRelation())
+                    .append(deviceAlarmConfig.getThreshold());
+            DeviceAlarmConfigVo alarmConfigVo = new DeviceAlarmConfigVo();
+            alarmConfigVo.setDeviceModel(deviceAlarmConfig.getDeviceModel());
+            alarmConfigVo.setConditions(conditions.toString());
+            alarmConfigVo.setField(deviceAlarmConfig.getField());
+            alarmConfigVo.setDescription(deviceAlarmConfig.getDescription());
+            alarmConfigVo.setCreateUser(deviceAlarmConfig.getCreateUser());
+            alarmConfigVos.add(alarmConfigVo);
+        }
+        return alarmConfigVos;
     }
 
     /**
