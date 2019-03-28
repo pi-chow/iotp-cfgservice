@@ -1,15 +1,20 @@
 package com.cetiti.iotp.cfgservice;
 
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
+import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.assetservice.DeviceModelService;
+import com.cetiti.iotp.itf.coreservice.CtrlService;
+import jdk.internal.org.objectweb.asm.tree.TryCatchBlockNode;
 import org.apache.dubbo.config.annotation.Reference;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.lang.reflect.UndeclaredThrowableException;
 
 /**
  * @author zhouliyu
@@ -22,7 +27,8 @@ public class AlarmServiceTest {
     @Autowired
     private AlarmService alarmService;
     @Reference
-    private DeviceModelService deviceModelService;
+    private CtrlService ctrlService;
+
 
     @Test
     public void addAlarmConfig(){
@@ -34,6 +40,16 @@ public class AlarmServiceTest {
         alarmConfig.setDescription("1111");
         alarmConfig.setAlarmType("offline");
         alarmService.updateAlarmConfig(account, alarmConfig);
+    }
+
+    @Test
+    public void testOffLine(){
+                try {
+                    ctrlService.syncSendDeviceDataStream("1_rtu_1", "rtu", "test");
+                }catch (UndeclaredThrowableException e){
+                        e.printStackTrace();
+                }
+
     }
 
 }
