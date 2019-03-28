@@ -41,6 +41,9 @@
             <if test="createUser != null">
                 AND create_user = #{createUser}
             </if>
+            <if test="alarmType != null">
+                AND alarm_type = #{alarmType}
+            </if>
         </where>
     </select>
 

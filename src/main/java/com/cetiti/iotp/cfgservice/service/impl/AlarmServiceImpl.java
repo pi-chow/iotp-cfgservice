@@ -125,8 +125,8 @@ public class AlarmServiceImpl implements AlarmService {
 
     /**
      * 获取告警配置列表
-     *
-     * @return
+     * TODO 提供condtion字段
+     * @returns
      */
     @Override
     public List<DeviceAlarmConfig> getAlarmConfig(JwtAccount account, Map<String, Object> params) {
