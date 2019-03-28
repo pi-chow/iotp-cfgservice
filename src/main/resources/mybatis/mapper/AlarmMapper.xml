@@ -4,23 +4,26 @@
     
     <select id="deviceAlarmList" parameterType="java.util.Map"
             resultType="com.cetiti.iotp.cfgservice.domain.ExceptionAlarm">
-        SELECT a.*,b.device_model_name
-        FROM t_exception_alarm a LEFT JOIN t_device_model b ON a.device_model = b.device_model
+        SELECT tea.*,tdm.device_model_name
+        FROM t_exception_alarm tea LEFT JOIN t_device_model tdm ON tea.device_model = tdm.device_model
         <where>
             <if test="deviceModel != null">
-                AND a.device_model = #{deviceModel}
+                AND tea.device_model = #{deviceModel}
             </if>
             <if test="deviceSn != null">
-                AND a.device_sn LIKE CONCAT('%',#{deviceSn},'%')
+                AND tea.device_sn LIKE CONCAT('%',#{deviceSn},'%')
             </if>
             <if test="startTime != null">
-                AND a.create_time &gt; #{startTime}
+                AND tea.create_time &gt; #{startTime}
             </if>
             <if test="endTime != null">
-                AND a.create_time &lt; #{endTime}
+                AND tea.create_time &lt; #{endTime}
             </if>
             <if test="conditions != null">
-                AND a.conditions LIKE CONCAT('%',#{conditions},'%')
+                AND tea.conditions LIKE CONCAT('%',#{conditions},'%')
+            </if>
+            <if test="userId != null">
+                AND tdm.create_user_id = #{userId}
             </if>
         </where>
     </select>
