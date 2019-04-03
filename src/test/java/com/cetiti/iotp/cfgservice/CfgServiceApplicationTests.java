@@ -3,7 +3,9 @@ package com.cetiti.iotp.cfgservice;
 import com.cetiti.ddapv2.iotplatform.common.ThingModel;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
+import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
+import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import org.apache.zookeeper.KeeperException;
 import org.junit.Before;
@@ -34,6 +36,14 @@ public class CfgServiceApplicationTests {
 	public void contextLoads() throws KeeperException, InterruptedException {
 		//cfgZkClient.deleteNode(PATH);
 		System.out.println(cfgZkClient.getData(PATH));
+	}
+
+	@Test
+	public void testsql(){
+		ThingModelDef thingModelDef = new ThingModelDef();
+		thingModelDef.setThingModelType("sensory");
+		thingModelDef.setStoreTypes("HBASE");
+		SqlGenerator.createTable(thingModelDef);
 	}
 
 }
