@@ -333,6 +333,8 @@ public class ThingModelProcessorImpl implements ThingModelProcessor {
 		// charset
 		if (StringUtils.isNoneBlank(field.getCharset())) {
 			builder.addMember("charset", "$S", field.getCharset());
+		} else {
+			builder.addMember("charset", "$S", "UTF-8");
 		}
 		// description
 		if (StringUtils.isNoneBlank(field.getDescription())) {
