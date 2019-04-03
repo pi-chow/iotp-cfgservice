@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,21 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 	@Autowired
 	private CfgZkClient cfgZkClient;
+
+	@PostConstruct
+	private void init(){
+		try {
+			if(!cfgZkClient.isConnect()){
+				throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
+			}
+
+			if(cfgZkClient.exists(PATH) == null){
+				cfgZkClient.createNode(PATH);
+			}
+		} catch (KeeperException | InterruptedException exception) {
+			logger.error("zookeeper error: " + exception);
+		}
+	}
 
 
 	/**
@@ -105,6 +121,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
+			updateNodeData();
             modelProcessor.packageAll();
             return failure;
         }else {
@@ -500,17 +517,9 @@ public class ThingModelServiceImpl implements ThingModelService {
      * */
 	private void updateNodeData() {
         String currentTime = String.valueOf(System.currentTimeMillis());
-        try {
-            if(!cfgZkClient.isConnect()){
-                throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
-            }
+		try {
+			cfgZkClient.setData(PATH,currentTime.getBytes());
 
-            if(cfgZkClient.exists(PATH) == null){
-				cfgZkClient.createNode(PATH);
-                cfgZkClient.setData(PATH, currentTime.getBytes());
-            }else {
-                cfgZkClient.setData(PATH,currentTime.getBytes());
-            }
         } catch (KeeperException | InterruptedException exception) {
             logger.error("zookeeper error: " + exception);
         }
