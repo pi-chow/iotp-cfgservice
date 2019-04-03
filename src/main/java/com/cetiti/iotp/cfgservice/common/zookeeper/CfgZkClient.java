@@ -18,12 +18,12 @@ import java.util.stream.Collectors;
 public class CfgZkClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CfgZkClient.class);
-
     private ZooKeeper zooKeeper;
-    private boolean isConnect = false;
     private static final int DEFAULT_TIME_OUT = 2000;
 
-    @Value("${iot.cfg.zkClient.address}")
+    @Value("${iotp.cfg.zkClient.watcher.path}")
+    private String PATH;
+    @Value("${iotp.cfg.zkClient.address}")
     private String address;
 
     @PostConstruct
@@ -34,22 +34,22 @@ public class CfgZkClient {
                     @Override
                     public void process(WatchedEvent watchedEvent) {
                         if(Event.KeeperState.SyncConnected == watchedEvent.getState()){
-                            isConnect = true;
+                            try {
+                                if(exists(PATH) == null){
+                                    createNode(PATH);
+                                }
+                            }catch (KeeperException | InterruptedException exception) {
+                                LOGGER.error("zookeeper error: " + exception);
+                            }
                         }
                     }
                 });
             } catch (IOException e) {
-                LOGGER.error("zooKeeper create error");
+                LOGGER.error("zooKeeper create error" + e);
             }
         }
     }
 
-    /**
-     * zookeeper是否连接
-     * */
-    public boolean isConnect(){
-        return isConnect;
-    }
 
     /**
      * 创建多级节点

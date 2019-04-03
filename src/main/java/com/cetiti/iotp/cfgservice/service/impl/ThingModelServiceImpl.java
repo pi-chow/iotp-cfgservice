@@ -32,6 +32,7 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,7 +50,9 @@ import java.util.stream.Collectors;
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-    private static final String PATH = "/iotp/cfg/thingmodel/publish/time";
+
+	@Value("${iotp.cfg.zkClient.watcher.path}")
+    private String PATH;
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
@@ -63,24 +66,8 @@ public class ThingModelServiceImpl implements ThingModelService {
 	@Autowired
 	private ThingModelProcessor modelProcessor;
 
-
 	@Autowired
 	private CfgZkClient cfgZkClient;
-
-	@PostConstruct
-	private void init(){
-		try {
-			if(!cfgZkClient.isConnect()){
-				throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
-			}
-
-			if(cfgZkClient.exists(PATH) == null){
-				cfgZkClient.createNode(PATH);
-			}
-		} catch (KeeperException | InterruptedException exception) {
-			logger.error("zookeeper error: " + exception);
-		}
-	}
 
 
 	/**
