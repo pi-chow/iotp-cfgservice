@@ -317,8 +317,20 @@ public class ThingModelProcessorImpl implements ThingModelProcessor {
 		switch (getTypeStatus(field.getCustomType())) {
 		case 0:
 			builder.addMember("fixedLength", "$L", field.getValueLength());
+			// charset
+			if (StringUtils.isNoneBlank(field.getCharset())) {
+				builder.addMember("charset", "$S", field.getCharset());
+			} else {
+				builder.addMember("charset", "$S", "UTF-8");
+			}
 			break;
 		case 1:
+			// charset
+			if (StringUtils.isNoneBlank(field.getCharset())) {
+				builder.addMember("charset", "$S", field.getCharset());
+			} else {
+				builder.addMember("charset", "$S", "UTF-8");
+			}
 			break;
 		case 2:
 			builder.addMember("bytes", "$L", field.getValueLength());
@@ -329,12 +341,6 @@ public class ThingModelProcessorImpl implements ThingModelProcessor {
 		// lenField
 		if (StringUtils.isNoneBlank(field.getLenField())) {
 			builder.addMember("lenField", "$S", field.getLenField());
-		}
-		// charset
-		if (StringUtils.isNoneBlank(field.getCharset())) {
-			builder.addMember("charset", "$S", field.getCharset());
-		} else {
-			builder.addMember("charset", "$S", "UTF-8");
 		}
 		// description
 		if (StringUtils.isNoneBlank(field.getDescription())) {
