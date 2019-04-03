@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-    private static final String PATH = "/iot_cfg_publish";
+    private static final String PATH = "/iotp/cfg/thingmodel/publich/time";
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;

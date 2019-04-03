@@ -196,12 +196,8 @@ public class AlarmServiceImpl implements AlarmService {
     public List<AlarmType> alarmTypeList() {
         List<AlarmTypeEnum> alarmTypeList = Lists.newArrayList(AlarmTypeEnum.values());
         List<AlarmType> alarmTypes = new ArrayList<>();
-        for (AlarmTypeEnum alarmTypeEnum : alarmTypeList){
-            AlarmType alarmType = new AlarmType();
-            alarmType.setValue(alarmTypeEnum.getValue());
-            alarmType.setLabel(alarmTypeEnum.getLabel());
-            alarmTypes.add(alarmType);
-        }
+        alarmTypeList.forEach(e -> alarmTypes.add(e.getAlarmType(e)));
+
         return alarmTypes;
     }
 
