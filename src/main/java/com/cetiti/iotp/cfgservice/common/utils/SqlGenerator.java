@@ -56,7 +56,7 @@ public class SqlGenerator {
 					sb.append(" int(50) ");
 				} else if (param.equals("float")) {
 					sb.append(" float(50,2) ");
-				} else if (param.equals("varstring")) {
+				} else if (param.equals("varstring") || param.equals("string")) {
 					sb.append(" varchar(50) ");
 				}
 
