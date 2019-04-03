@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-    private static final String PATH = "/iotp/cfg/thingmodel/publich/time";
+    private static final String PATH = "/iotp/cfg/thingmodel/publish/time";
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
@@ -506,7 +506,8 @@ public class ThingModelServiceImpl implements ThingModelService {
             }
 
             if(cfgZkClient.exists(PATH) == null){
-                cfgZkClient.createNode(PATH, currentTime.getBytes());
+				cfgZkClient.createNode(PATH);
+                cfgZkClient.setData(PATH, currentTime.getBytes());
             }else {
                 cfgZkClient.setData(PATH,currentTime.getBytes());
             }

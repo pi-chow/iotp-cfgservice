@@ -8,7 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CfgZkClient {
@@ -46,6 +50,28 @@ public class CfgZkClient {
     public boolean isConnect(){
         return isConnect;
     }
+
+    /**
+     * 创建多级节点
+     * */
+    public void createNode(String path) throws KeeperException, InterruptedException {
+
+        List<String> nodeList = Arrays.asList(path.split("/"));
+        nodeList = nodeList.stream().filter(e -> !e.equals("")).collect(Collectors.toList());
+        String nodeTemp = "/";
+        for (String node : nodeList){
+            nodeTemp  = nodeTemp + node ;
+            if(zooKeeper.exists(nodeTemp, false)  == null){
+                zooKeeper.create(nodeTemp,null,ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                nodeTemp = nodeTemp + "/";
+            }else {
+                nodeTemp = nodeTemp + "/";
+            }
+        }
+
+    }
+
+
 
     /**
      * 创建节点
