@@ -265,7 +265,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelId()), "模型编号不能为空！");
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
 		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
-		Preconditions.checkArgument(account != null, "登录用户信息不存在。");
 
 		model.setModifyTime(new Date());
 		model.setModifyUser(account.getUserId());
