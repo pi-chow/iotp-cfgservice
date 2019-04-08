@@ -40,7 +40,6 @@ public class ExceptionAlarm implements Serializable {
      */
     public String alarm;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     public Date createTime;
 
     /**
