@@ -108,8 +108,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
-			updateNodeData();
-            modelProcessor.packageAll();
             return failure;
         }else {
             // -- 打包
@@ -237,6 +235,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
 
 		model.setThingModelId(GenerationSequenceUtil.uuid());
+		model.setTemplate(0);
 		model.setCreateTime(new Date());
 		model.setModifyTime(new Date());
 		model.setCreateUser(account.getUserId());

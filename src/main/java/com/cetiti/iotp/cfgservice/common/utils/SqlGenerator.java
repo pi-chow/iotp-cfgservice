@@ -17,10 +17,10 @@ import java.util.List;
 public class SqlGenerator {
 
 	public static String createTable(ThingModelDef thingModel) {
-/*		Preconditions.checkArgument(thingModel != null);
+		Preconditions.checkArgument(thingModel != null);
 		Preconditions.checkArgument(thingModel.getThingModelType() != null, "模型类型不能为空！");
 		Preconditions.checkArgument(thingModel.getDeviceModel() != null, "设备型号不能为空！");
-		Preconditions.checkArgument(thingModel.getFields() != null, "字段不能为空！");*/
+		Preconditions.checkArgument(thingModel.getFields() != null, "字段不能为空！");
 
 		String thingModelType = thingModel.getThingModelType();
 		String deviceModel = thingModel.getDeviceModel();
