@@ -14,10 +14,10 @@
                 AND tea.device_sn LIKE CONCAT('%',#{deviceSn},'%')
             </if>
             <if test="startTime != null">
-                AND tea.create_time &gt; #{startTime}
+                AND <![CDATA[ tea.create_time > #{startTime,jdbcType=DATE}]]>
             </if>
             <if test="endTime != null">
-                AND tea.create_time &lt; #{endTime}
+                AND <![CDATA[ tea.create_time < #{endTime,jdbcType=DATE}]]>
             </if>
             <if test="conditions != null">
                 AND tea.conditions LIKE CONCAT('%',#{conditions},'%')

@@ -1,5 +1,6 @@
 package com.cetiti.iotp.cfgservice.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;
@@ -39,6 +40,7 @@ public class ExceptionAlarm implements Serializable {
      */
     public String alarm;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     public Date createTime;
 
     /**
