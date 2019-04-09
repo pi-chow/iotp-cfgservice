@@ -51,8 +51,8 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
 
-	@Value("${iotp.cfg.zkClient.watcher.path}")
-    private String PATH;
+	@Value("${iotp.cfg.zkClient.watcher.paths}")
+	private String paths;
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
@@ -498,15 +498,15 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 
 	/**
-     * zookeeper 设备协议发布生成node
+     * zookeeper 更新/iotp/cfg/thingmodel/publish/time节点
      * */
 	private void updateNodeData() {
         String currentTime = String.valueOf(System.currentTimeMillis());
 		try {
-			cfgZkClient.setData(PATH,currentTime.getBytes());
+			cfgZkClient.setData(paths.split(",")[0],currentTime.getBytes());
 
         } catch (KeeperException | InterruptedException exception) {
-            logger.error("zookeeper error: " + exception);
+            logger.error("zookeeper error: thingModel->" + exception);
         }
     }
 

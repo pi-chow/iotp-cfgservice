@@ -1,17 +1,13 @@
 package com.cetiti.iotp.cfgservice;
 
-import com.cetiti.ddapv2.iotplatform.common.ThingModel;
-import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
-import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
-import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
 import org.apache.zookeeper.KeeperException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -19,7 +15,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class CfgServiceApplicationTests {
 
-	private String PATH = "/iotp/cfg/thingmodel/publish/time";
+	@Value("${iotp.cfg.zkClient.watcher.paths}")
+	private String paths;
 
 	@Autowired
 	private ThingModelService thingModelService;
@@ -29,21 +26,27 @@ public class CfgServiceApplicationTests {
 
 	@Before
 	public void test(){
-		thingModelService.allModelPublish(null);
+		updateNodeData();
 	}
 
 	@Test
 	public void contextLoads() throws KeeperException, InterruptedException {
 		//cfgZkClient.deleteNode(PATH);
-		System.out.println(cfgZkClient.getData(PATH));
+		System.out.println(cfgZkClient.getData(paths.split(",")[0]));
 	}
 
-	@Test
-	public void testsql(){
-		ThingModelDef thingModelDef = new ThingModelDef();
-		thingModelDef.setThingModelType("sensory");
-		thingModelDef.setStoreTypes("HBASE");
-		SqlGenerator.createTable(thingModelDef);
+	/**
+	 * zookeeper 更新publish/time节点
+	 * */
+	private void updateNodeData() {
+		String currentTime = String.valueOf(System.currentTimeMillis());
+		try {
+			cfgZkClient.setData(paths.split(",")[1],currentTime.getBytes());
+
+		} catch (KeeperException | InterruptedException exception) {
+			exception.printStackTrace();
+		}
 	}
+
 
 }

@@ -175,8 +175,7 @@ public class AlarmController {
      */
     @ApiOperation(value = "获取最新告警配置", notes = "应用于设备异常处理")
     @GetMapping(value = "/getAlarmCfg")
-    public BaseTip getAlarmCfgInfo(HttpServletResponse response) {
-        response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
+    public BaseTip getAlarmCfgInfo() {
         return new SuccessTip<>(alarmService.getAlarmConfigToException(AlarmTypeEnum.SENSORY.getValue()));
     }
 

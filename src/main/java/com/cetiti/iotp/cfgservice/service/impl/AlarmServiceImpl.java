@@ -5,6 +5,7 @@ import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
 import com.cetiti.iotp.cfgservice.common.access.DevUser;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
+import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
 import com.cetiti.iotp.cfgservice.domain.AlarmType;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
@@ -21,9 +22,11 @@ import com.google.common.collect.Maps;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -41,6 +44,12 @@ public class AlarmServiceImpl implements AlarmService {
 
     private Logger logger = LoggerFactory.getLogger(AlarmServiceImpl.class);
 
+    @Value("${iotp.cfg.zkClient.watcher.paths}")
+    private String paths;
+
+    @Autowired
+    private CfgZkClient cfgZkClient;
+
     @Autowired
     private AlarmMapper alarmMapper;
 
@@ -55,16 +64,6 @@ public class AlarmServiceImpl implements AlarmService {
 
     private static File file = new File("exception-guard.xml");
 
-    private static Long LastModified = System.currentTimeMillis();
-
-    public static void setLastModified() {
-        LastModified = System.currentTimeMillis();
-    }
-
-    public static Long getLastModified() {
-        return LastModified;
-    }
-
     /**
      * 新增告警配置
      * @param account 账户
@@ -73,7 +72,6 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public String addAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmConfig) {
-        setLastModified();
         String alarmId = GenerationSequenceUtil.uuid();
         alarmConfig.setAlarmId(alarmId);
         alarmConfig.setCreateTime(new Date());
@@ -82,6 +80,7 @@ public class AlarmServiceImpl implements AlarmService {
         alarmConfig.setModifyUser(account.getUserId());
         insertOffline(alarmConfig.getAlarmType(), alarmConfig.getThreshold(), alarmConfig.getDeviceModel());
         deviceAlarmConfigMapper.insert(alarmConfig);
+        updateNodeData();
         return alarmId;
     }
 
@@ -93,7 +92,6 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public boolean updateAlarmConfig(JwtAccount account, DeviceAlarmConfig alarmConfig) {
-        setLastModified();
         alarmConfig.setModifyTime(new Date());
         alarmConfig.setModifyUser(account.getUserId());
         if(alarmConfig.getAlarmType().equals("offline")){
@@ -101,7 +99,9 @@ public class AlarmServiceImpl implements AlarmService {
             alarmConfig.setDescription(null);
         }
         insertOffline(alarmConfig.getAlarmType(), alarmConfig.getThreshold(), alarmConfig.getDeviceModel());
-        return deviceAlarmConfigMapper.updateByPrimaryKeySelective(alarmConfig) == 1;
+        boolean success = deviceAlarmConfigMapper.updateByPrimaryKeySelective(alarmConfig) == 1;
+        updateNodeData();
+        return success;
     }
 
     /**
@@ -112,7 +112,6 @@ public class AlarmServiceImpl implements AlarmService {
      */
     @Override
     public boolean deleteAlarmConfig(String alarmId) {
-        setLastModified();
         DeviceAlarmConfig alarmConfig = getAlarmConfig(alarmId);
         if(alarmConfig.getAlarmType().equals(EVENT_NAME)){
             try {
@@ -121,7 +120,9 @@ public class AlarmServiceImpl implements AlarmService {
                 throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
             }
         }
-        return deviceAlarmConfigMapper.deleteByPrimaryKey(alarmId) == 1;
+        boolean success  = deviceAlarmConfigMapper.deleteByPrimaryKey(alarmId) == 1;
+        updateNodeData();
+        return success;
     }
 
     /**
@@ -143,10 +144,12 @@ public class AlarmServiceImpl implements AlarmService {
 
 
     /**
+     *
      * 拉取设备配置文件
      *
      * @return
      */
+    @Deprecated
     @Override
     public Map<String, Object> getAlarmCfgInfo() {
         if (!file.exists()) {
@@ -263,6 +266,19 @@ public class AlarmServiceImpl implements AlarmService {
             }catch (Exception e){
                 throw new  BizLocaleException(CfgResultCode.ALARM_EVENT_OFFLINE_REDIS);
             }
+        }
+    }
+
+    /**
+     * zookeeper 更新/iotp/cfg/alarm/config/time节点
+     * */
+    private void updateNodeData() {
+        String currentTime = String.valueOf(System.currentTimeMillis());
+        try {
+            cfgZkClient.setData(paths.split(",")[1],currentTime.getBytes());
+
+        } catch (KeeperException | InterruptedException exception) {
+            logger.error("zookeeper error: alarm->" + exception);
         }
     }
 

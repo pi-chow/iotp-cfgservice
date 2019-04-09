@@ -35,7 +35,7 @@ public class SqlGenerator {
 		sb = new StringBuilder(200);
 
 		if (thingModel.getStoreTypes().contains("HBASE")) {
-			sb.append("HBASE: create '" + tableName + "', { NAME => 'info'};\r\n");
+			sb.append("HBASE: create '" + tableName + "', { NAME => 'INFO'};\r\n");
 		}
 		if (thingModel.getStoreTypes().contains("MYSQL")) {
 			sb.append("MYSQL: create table ").append(tableName).append(" ( \r\n");
