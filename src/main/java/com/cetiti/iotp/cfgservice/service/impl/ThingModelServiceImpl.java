@@ -108,6 +108,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
+			modelProcessor.packageAll();
             return failure;
         }else {
             // -- 打包
