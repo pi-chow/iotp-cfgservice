@@ -49,7 +49,7 @@
 			<if test="deviceModelName != null">device_model_name = #{deviceModelName},</if>
 			<if test="thingModelType != null">thing_model_type = #{thingModelType},</if>
 			<if test="structType != null">struct_type = #{structType},</if>
-			<if test="template != 0">template = #{template},</if>
+			<if test="template != null">template = #{template},</if>
 			<if test="storeTypes != null">store_types = #{storeTypes},</if>
 			<if test="description != null">description = #{description},</if>
 			<if test="sqls != null">sqls = #{sqls},</if>
