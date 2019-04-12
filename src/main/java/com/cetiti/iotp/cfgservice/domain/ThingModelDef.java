@@ -49,8 +49,9 @@ public class ThingModelDef extends BaseDomain implements Serializable {
 	private String structType;
 
 	// 是否可以作为模板。
+	@JsonIgnore
 	@ApiModelProperty(value = "是否可以作为模板:0 - 不可以；1 - 可以")
-	private int template = 0;
+	private int template;
 
 	// 消息简介
 	private String description;

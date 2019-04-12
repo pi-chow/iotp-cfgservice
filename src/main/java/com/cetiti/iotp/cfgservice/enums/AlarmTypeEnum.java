@@ -1,5 +1,7 @@
 package com.cetiti.iotp.cfgservice.enums;
 
+import com.cetiti.iotp.cfgservice.domain.AlarmType;
+
 /**
  * @author zhouliyu
  * @since 2019-03-26 11:44:11
@@ -23,5 +25,12 @@ public enum  AlarmTypeEnum {
 
     public String getLabel() {
         return label;
+    }
+
+    public AlarmType getAlarmType(AlarmTypeEnum alarmTypeEnum){
+        AlarmType alarmType = new AlarmType();
+        alarmType.setLabel(alarmTypeEnum.getLabel());
+        alarmType.setValue(alarmTypeEnum.getValue());
+        return alarmType;
     }
 }

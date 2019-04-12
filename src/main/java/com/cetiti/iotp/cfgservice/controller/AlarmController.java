@@ -8,10 +8,8 @@ import com.cetiti.ddapv2.iotplatform.common.tip.SuccessTip;
 import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
 import com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig;
 import com.cetiti.iotp.cfgservice.domain.ExceptionAlarm;
-import com.cetiti.iotp.cfgservice.domain.vo.DeviceAlarmConfigVo;
 import com.cetiti.iotp.cfgservice.enums.AlarmTypeEnum;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
-import com.cetiti.iotp.cfgservice.service.impl.AlarmServiceImpl;
 import com.cetiti.iotp.cfgservice.service.AlarmService;
 import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
 import com.cetiti.iotp.itf.assetservice.DeviceModelService;
@@ -28,9 +26,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -175,8 +171,7 @@ public class AlarmController {
      */
     @ApiOperation(value = "获取最新告警配置", notes = "应用于设备异常处理")
     @GetMapping(value = "/getAlarmCfg")
-    public BaseTip getAlarmCfgInfo(HttpServletResponse response) {
-        response.addDateHeader("Last-Modified", AlarmServiceImpl.getLastModified());
+    public BaseTip getAlarmCfgInfo() {
         return new SuccessTip<>(alarmService.getAlarmConfigToException(AlarmTypeEnum.SENSORY.getValue()));
     }
 

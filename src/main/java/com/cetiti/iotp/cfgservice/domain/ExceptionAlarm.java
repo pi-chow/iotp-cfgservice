@@ -1,5 +1,6 @@
 package com.cetiti.iotp.cfgservice.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.io.Serializable;

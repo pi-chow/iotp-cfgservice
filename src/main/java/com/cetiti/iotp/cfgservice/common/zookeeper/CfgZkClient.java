@@ -1,5 +1,8 @@
 package com.cetiti.iotp.cfgservice.common.zookeeper;
 
+import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
+import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
@@ -8,18 +11,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class CfgZkClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CfgZkClient.class);
-
     private ZooKeeper zooKeeper;
-    private boolean isConnect = false;
     private static final int DEFAULT_TIME_OUT = 2000;
 
-    @Value("${iot.cfg.zkClient.address}")
+    @Value("${iotp.cfg.zkClient.watcher.paths}")
+    private String paths;
+    @Value("${iotp.cfg.zkClient.address}")
     private String address;
 
     @PostConstruct
@@ -30,22 +37,53 @@ public class CfgZkClient {
                     @Override
                     public void process(WatchedEvent watchedEvent) {
                         if(Event.KeeperState.SyncConnected == watchedEvent.getState()){
-                            isConnect = true;
+                            Arrays.asList(getPaths(paths)).forEach(e ->{
+                                try {
+                                    if(exists(e) == null){
+                                        createNode(e);
+                                    }
+                                } catch (KeeperException | InterruptedException exception) {
+                                    LOGGER.error("zooKeeper create path error" + exception);
+                                }
+                            });
                         }
                     }
                 });
             } catch (IOException e) {
-                LOGGER.error("zooKeeper create error");
+                LOGGER.error("zooKeeper create connect error" + e);
             }
         }
     }
 
     /**
-     * zookeeper是否连接
+     * 创建多级节点
      * */
-    public boolean isConnect(){
-        return isConnect;
+    public void createNode(String path) throws KeeperException, InterruptedException {
+
+        List<String> nodeList = Arrays.asList(path.split("/"));
+        nodeList = nodeList.stream().filter(e -> !e.equals("")).collect(Collectors.toList());
+        String nodeTemp = "/";
+        for (String node : nodeList){
+            nodeTemp  = nodeTemp + node ;
+            if(zooKeeper.exists(nodeTemp, false)  == null){
+                zooKeeper.create(nodeTemp,null,ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                nodeTemp = nodeTemp + "/";
+            }else {
+                nodeTemp = nodeTemp + "/";
+            }
+        }
+
     }
+
+    private String[] getPaths(String paths){
+        if(StringUtils.isNoneBlank(paths)){
+            return paths.split(",");
+        }else {
+            throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
+        }
+    }
+
+
 
     /**
      * 创建节点

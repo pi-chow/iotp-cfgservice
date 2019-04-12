@@ -6,7 +6,7 @@
         <result column="device_model" jdbcType="VARCHAR" property="deviceModel"/>
         <result column="device_model_name" jdbcType="VARCHAR" property="deviceModelName"/>
         <result column="field" jdbcType="VARCHAR" property="field"/>
-        <result column="alarm_type" jdbcType="TINYINT" property="alarmType"/>
+        <result column="alarm_type" jdbcType="VARCHAR" property="alarmType"/>
         <result column="alarm_level" jdbcType="TINYINT" property="alarmLevel"/>
         <result column="relation" jdbcType="VARCHAR" property="relation"/>
         <result column="threshold" jdbcType="VARCHAR" property="threshold"/>

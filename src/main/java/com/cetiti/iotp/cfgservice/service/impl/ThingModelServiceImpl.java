@@ -32,9 +32,11 @@ import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PostConstruct;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,7 +50,9 @@ import java.util.stream.Collectors;
 public class ThingModelServiceImpl implements ThingModelService {
 
 	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
-    private static final String PATH = "/iot_cfg_publish";
+
+	@Value("${iotp.cfg.zkClient.watcher.paths}")
+	private String paths;
 
 	@Autowired
 	private ThingModelDefMapper modelDefMapper;
@@ -61,7 +65,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 	@Autowired
 	private ThingModelProcessor modelProcessor;
-
 
 	@Autowired
 	private CfgZkClient cfgZkClient;
@@ -105,7 +108,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
         //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
         if (failure.size() > 0) {
-            modelProcessor.packageAll();
+			modelProcessor.packageAll();
             return failure;
         }else {
             // -- 打包
@@ -233,6 +236,7 @@ public class ThingModelServiceImpl implements ThingModelService {
 		}
 
 		model.setThingModelId(GenerationSequenceUtil.uuid());
+		model.setTemplate(0);
 		model.setCreateTime(new Date());
 		model.setModifyTime(new Date());
 		model.setCreateUser(account.getUserId());
@@ -262,7 +266,6 @@ public class ThingModelServiceImpl implements ThingModelService {
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelId()), "模型编号不能为空！");
 		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
 		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
-		Preconditions.checkArgument(account != null, "登录用户信息不存在。");
 
 		model.setModifyTime(new Date());
 		model.setModifyUser(account.getUserId());
@@ -496,22 +499,15 @@ public class ThingModelServiceImpl implements ThingModelService {
 
 
 	/**
-     * zookeeper 设备协议发布生成node
+     * zookeeper 更新/iotp/cfg/thingmodel/publish/time节点
      * */
 	private void updateNodeData() {
         String currentTime = String.valueOf(System.currentTimeMillis());
-        try {
-            if(!cfgZkClient.isConnect()){
-                throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
-            }
+		try {
+			cfgZkClient.setData(paths.split(",")[0],currentTime.getBytes());
 
-            if(cfgZkClient.exists(PATH) == null){
-                cfgZkClient.createNode(PATH, currentTime.getBytes());
-            }else {
-                cfgZkClient.setData(PATH,currentTime.getBytes());
-            }
         } catch (KeeperException | InterruptedException exception) {
-            logger.error("zookeeper error: " + exception);
+            logger.error("zookeeper error: thingModel->" + exception);
         }
     }
 

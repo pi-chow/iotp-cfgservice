@@ -35,7 +35,7 @@ public class SqlGenerator {
 		sb = new StringBuilder(200);
 
 		if (thingModel.getStoreTypes().contains("HBASE")) {
-			sb.append("HBASE: create '" + tableName + "', { NAME => 'info'};\r\n");
+			sb.append("HBASE: create '" + tableName + "', { NAME => 'INFO'};\r\n");
 		}
 		if (thingModel.getStoreTypes().contains("MYSQL")) {
 			sb.append("MYSQL: create table ").append(tableName).append(" ( \r\n");
@@ -56,7 +56,7 @@ public class SqlGenerator {
 					sb.append(" int(50) ");
 				} else if (param.equals("float")) {
 					sb.append(" float(50,2) ");
-				} else if (param.equals("varstring")) {
+				} else if (param.equals("varstring") || param.equals("string")) {
 					sb.append(" varchar(50) ");
 				}
 
@@ -66,8 +66,9 @@ public class SqlGenerator {
 				sb.append(param).append("',\r\n");
 			}
 			sb.append(" PRIMARY KEY (`id`) \r\n");
-			sql = sb.toString() + " )ENGINE =INNODB DEFAULT  CHARSET= utf8;\r\n";
+			sb.append(  " )ENGINE =INNODB DEFAULT  CHARSET= utf8;\r\n");
 		}
+		sql = sb.toString();
 		return sql;
 	}
 
