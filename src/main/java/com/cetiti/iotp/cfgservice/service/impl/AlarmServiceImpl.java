@@ -3,6 +3,7 @@ package com.cetiti.iotp.cfgservice.service.impl;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
+import com.cetiti.iotp.cfgservice.common.config.properties.CfgZkClientProperties;
 import com.cetiti.iotp.cfgservice.common.enums.RoleEnum;
 import com.cetiti.iotp.cfgservice.common.result.CfgErrorCodeEnum;
 import com.cetiti.iotp.cfgservice.common.result.CfgServiceException;
@@ -37,8 +38,8 @@ import java.util.*;
 @Service
 public class AlarmServiceImpl implements AlarmService {
 
-    @Value("${iotp.cfg.zkClient.watcher.paths}")
-    private String ZK_CLIENT_WATCHER_PATHS;
+    @Autowired
+    private CfgZkClientProperties properties;
 
     @Autowired
     private CfgZkClient cfgZkClient;
@@ -183,7 +184,7 @@ public class AlarmServiceImpl implements AlarmService {
     private void updateNodeData() {
         String currentTime = String.valueOf(System.currentTimeMillis());
         try {
-            cfgZkClient.setData(ZK_CLIENT_WATCHER_PATHS.split(",")[1],currentTime.getBytes());
+            cfgZkClient.setData(properties.getWatcherPaths().get(1),currentTime.getBytes());
         } catch (KeeperException | InterruptedException exception) {
             log.error("zookeeper error: alarm->" + exception);
             throw new CfgServiceException(CfgErrorCodeEnum.ZOOKEEPER_UPDATE_DATA_ERROR);

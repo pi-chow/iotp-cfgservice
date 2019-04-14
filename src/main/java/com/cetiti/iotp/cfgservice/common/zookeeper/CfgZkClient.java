@@ -1,13 +1,10 @@
 package com.cetiti.iotp.cfgservice.common.zookeeper;
 
-import com.cetiti.iotp.cfgservice.common.result.CfgErrorCodeEnum;
-import com.cetiti.iotp.cfgservice.common.result.CfgServiceException;
-import org.apache.commons.lang3.StringUtils;
+import com.cetiti.iotp.cfgservice.common.config.properties.CfgZkClientProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -16,40 +13,37 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class CfgZkClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CfgZkClient.class);
     private ZooKeeper zooKeeper;
-    private static final int DEFAULT_TIME_OUT = 2000;
 
-    @Value("${iotp.cfg.zkClient.watcher.paths}")
-    private String paths;
-    @Value("${iotp.cfg.zkClient.address}")
-    private String address;
+    @Autowired
+    private CfgZkClientProperties properties;
 
     @PostConstruct
     public void init(){
         if(zooKeeper == null){
             try {
-                zooKeeper = new ZooKeeper(address, DEFAULT_TIME_OUT, new Watcher() {
+                zooKeeper = new ZooKeeper(properties.getHost(), properties.getTimeout(), new Watcher() {
                     @Override
                     public void process(WatchedEvent watchedEvent) {
                         if(Event.KeeperState.SyncConnected == watchedEvent.getState()){
-                            Arrays.asList(getPaths(paths)).forEach(e ->{
+                            properties.getWatcherPaths().forEach(e ->{
                                 try {
                                     if(exists(e) == null){
                                         createNode(e);
                                     }
                                 } catch (KeeperException | InterruptedException exception) {
-                                    LOGGER.error("zooKeeper create path error" + exception);
+                                    log.error("zooKeeper create path error" + exception);
                                 }
                             });
                         }
                     }
                 });
             } catch (IOException e) {
-                LOGGER.error("zooKeeper create connect error" + e);
+                log.error("zooKeeper create connect error" + e);
             }
         }
     }
@@ -57,7 +51,7 @@ public class CfgZkClient {
     /**
      * 创建多级节点
      * */
-    public void createNode(String path) throws KeeperException, InterruptedException {
+    private void createNode(String path) throws KeeperException, InterruptedException {
 
         List<String> nodeList = Arrays.asList(path.split("/"));
         nodeList = nodeList.stream().filter(e -> !e.equals("")).collect(Collectors.toList());
@@ -73,15 +67,6 @@ public class CfgZkClient {
         }
 
     }
-
-    private String[] getPaths(String paths){
-        if(StringUtils.isNoneBlank(paths)){
-            return paths.split(",");
-        }else {
-            throw new CfgServiceException(CfgErrorCodeEnum.ZOOKEEPER_ERROR);
-        }
-    }
-
 
 
     /**

@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private static final List<String> WHITELIST = new ArrayList<>();
 
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
 
@@ -36,6 +37,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(accessInterceptorAdapter)
                  .excludePathPatterns(WHITELIST)
+                .excludePathPatterns("/druid/**")
                 .excludePathPatterns("/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**");
 
     }

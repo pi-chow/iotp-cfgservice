@@ -7,6 +7,7 @@ import com.cetiti.ddapv2.iotplatform.common.thingModel.enums.StructTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.thingModel.enums.ThingModelTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.thingModel.relation.StructTypeCustomTypeRelation;
 import com.cetiti.ddapv2.iotplatform.common.thingModel.relation.ThingModelTypeStoreTypeRelation;
+import com.cetiti.iotp.cfgservice.common.config.properties.CfgZkClientProperties;
 import com.cetiti.iotp.cfgservice.common.result.CfgErrorCodeEnum;
 import com.cetiti.iotp.cfgservice.common.result.CfgServiceException;
 import com.cetiti.iotp.cfgservice.common.utils.DeviceModelValidateManger;
@@ -27,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -47,8 +47,8 @@ import java.util.stream.Collectors;
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 
-    @Value("${iotp.cfg.zkClient.watcher.paths}")
-    private String ZK_CLIENT_WATCHER_PATHS;
+    @Autowired
+    private CfgZkClientProperties properties;
 
     @Autowired
     private CfgZkClient cfgZkClient;
@@ -314,7 +314,7 @@ public class ThingModelServiceImpl implements ThingModelService {
     private void updateNodeData() {
         String currentTime = String.valueOf(System.currentTimeMillis());
         try {
-            cfgZkClient.setData(ZK_CLIENT_WATCHER_PATHS.split(",")[0],currentTime.getBytes());
+            cfgZkClient.setData(properties.getWatcherPaths().get(0),currentTime.getBytes());
         } catch (KeeperException | InterruptedException exception) {
             log.error("zookeeper error: thingModel->" + exception);
             throw new CfgServiceException(CfgErrorCodeEnum.ZOOKEEPER_UPDATE_DATA_ERROR);
