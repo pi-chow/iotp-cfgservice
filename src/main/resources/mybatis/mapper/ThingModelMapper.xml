@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cetiti.iotp.cfgservice.mapper.ThingModelMapper">
+
+    <select id="listThingModelHeader" resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader">
+        SELECT device_model, device_model_name, thing_model_id,
+        thing_model_type, thing_model_name, store_type,struct_type,description,sql_statements,
+        template
+        FROM t_thing_model
+        <where>
+            <if test="deviceModel != null and deviceModel != ''">
+                device_model =  #{deviceModel, jdbcType=VARCHAR}
+            </if>
+            <if test="thingModelType != null and deviceModel != ''">
+                thing_model_type =  #{thingModelType, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="getThingModelHeader" resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader">
+        SELECT device_model, device_model_name, thing_model_id,
+        thing_model_type, thing_model_name, store_type,struct_type,description,sql_statements,
+        template
+        FROM t_thing_model
+        <where>
+            <if test="thingModelId != null and thingModelId != ''">
+                AND thing_model_id =  #{thingModelId, jdbcType=VARCHAR}
+            </if>
+            <if test="deviceModel != null and deviceModel != ''">
+                AND device_model = #{deviceModel, jdbcType=VARCHAR}
+            </if>
+            <if test="thingModelType != null and thingModelType != ''">
+                AND thing_model_type = #{thingModelType, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertSelective">
+        INSERT INTO t_thing_model
+        (device_model, device_model_name, thing_model_id,
+        thing_model_type, thing_model_name, store_type, struct_type, description, sql_statements,
+        template,create_time,create_user,modify_time,modify_user)
+        VALUES
+        (#{deviceModel, jdbcType=VARCHAR},#{deviceModelName, jdbcType=VARCHAR},#{thingModelId, jdbcType=VARCHAR},
+         #{thingModelType, jdbcType=VARCHAR},#{thingModelName, jdbcType=VARCHAR},#{storeType, jdbcType=VARCHAR},
+         #{structType, jdbcType=VARCHAR},#{description, jdbcType=VARCHAR},#{sqlStatements, jdbcType=VARCHAR},
+         #{template, jdbcType=INTEGER},#{createTime, jdbcType=TIMESTAMP},#{createUser, jdbcType=VARCHAR},
+         #{modifyTime, jdbcType=TIMESTAMP},#{modifyUser, jdbcType=VARCHAR})
+    </insert>
+
+    <delete id="deleteByPrimaryKey">
+        DELETE tm, tmf
+        FROM t_thing_model tm LEFT JOIN t_thing_model_field tmf
+        ON tm.thing_model_id = tmf.thing_model_id
+        WHERE tm.thing_model_id = #{thingModelId, jdbcType=VARCHAR}
+    </delete>
+
+    <select id="listThingModelHeaderAsTemplate" parameterType="java.util.Map"
+            resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader">
+        SELECT device_model, device_model_name, thing_model_id,
+        thing_model_type, thing_model_name, store_type,struct_type,description,sql_statements,
+        template
+        FROM t_thing_model WHERE 1=1
+        AND template = 1 AND thing_model_type='sensory'
+        <if test="createUser != null and createUser != ''">
+            AND create_user = #{createUser, jdbcType=VARCHAR}
+        </if>
+        <if test="deviceModel != null and deviceModel != ''">
+            AND device_model = #{deviceModel, jdbcType=VARCHAR}
+        </if>
+        <if test="deviceModelName != null and deviceModelName != ''">
+            AND device_model_name LIKE CONCAT('%',#{deviceModelName, jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY modify_time DESC
+    </select>
+
+    <update id="deleteThingModelHeaderAsTemplate">
+        UPDATE
+		t_thing_model SET template=0 WHERE device_model = #{deviceModel, jdbcType=VARCHAR}
+    </update>
+
+    <select id="selectCount" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader"
+        resultType="java.lang.Integer">
+         SELECT COUNT(thing_model_id) FROM t_thing_model
+        <where>
+            <if test="deviceModel != null and deviceModel != ''">
+                AND device_model = #{deviceModel, jdbcType=VARCHAR}
+            </if>
+            <if test="thingModelType != null and thingModelType != ''">
+                AND thing_model_type = #{thingModelType, jdbcType=VARCHAR}
+            </if>
+            <if test="thingModelName != null and thingModelName != ''">
+                AND thing_model_name = #{thingModelName, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+    
+    <update id="thingModelAsTemplate" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader">
+        UPDATE t_thing_model
+        <set>
+            <if test="template != null and template != ''">
+                template = #{template, jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyUser != null and modifyUser != ''">
+                modify_user = #{modifyUser,jdbcType=VARCHAR}
+            </if>
+        </set>
+        WHERE thing_model_id = #{thingModelId,jdbcType=VARCHAR}
+    </update>
+
+    <update id="updateDeviceModelName" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader">
+        UPDATE
+        t_thing_model
+        <set>
+            <if test="deviceModelName != null and deviceModelName !=''">
+                device_model_name = #{deviceModelName, jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyUser != null and modifyUser != ''">
+                modify_user = #{modifyUser,jdbcType=VARCHAR}
+            </if>
+        </set>
+        WHERE device_model = #{deviceModel, jdbcType=VARCHAR}
+    </update>
+
+</mapper>

@@ -3,6 +3,7 @@ package com.cetiti.iotp.cfgservice.common.result;
 import com.cetiti.ddapv2.iotplatform.common.BaseResultCode;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
 import com.cetiti.ddapv2.iotplatform.common.tip.ErrorTip;
+import org.apache.dubbo.rpc.RpcException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,16 @@ public class BaseExceptionHandler {
     public ErrorTip getBizLocaleException(BizLocaleException e){
         LOGGER.info("业务异常：" + e);
         return new ErrorTip(e.getErrorCode());
+    }
+
+    /**
+     * RPC异常
+     * */
+    @ExceptionHandler(RpcException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ErrorTip getRpcException(RpcException e){
+        LOGGER.info("RPC调用异常：" + e);
+        return new ErrorTip(e.getCode(), e.getMessage() != null ? "RPC接口异常：" + e.getMessage() : "非常抱歉，运行异常");
     }
 
     /**

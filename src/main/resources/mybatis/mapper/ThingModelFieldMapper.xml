@@ -1,76 +1,122 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper">
-    <resultMap id="ThingModelFieldMap" type="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField">
-        <result column="name" jdbcType="VARCHAR" property="name"/>
-        <result column="label" jdbcType="VARCHAR" property="label"/>
-        <result column="unit" jdbcType="VARCHAR" property="unit"/>
-        <result column="customType" jdbcType="VARCHAR" property="customType"/>
-    </resultMap>
 
-    <insert id="add"
-            parameterType="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField"
-            useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO
-        t_thing_model_field
-        (thing_model_id, name, description, custom_type, default_value,
-        value_length, len_field, index_num, `charset`, `column`, `unit`,`label`)
+
+    <select id="listThingModelField" parameterType="java.util.Map"
+            resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField">
+        SELECT
+        thing_model_id,thing_model_field_id, field_name,`column`,label,custom_type,fixed_length,
+        link_field, unit, description, index_num, charset
+        FROM t_thing_model_field
+        <where>
+            <if test="thingModelId != null and thingModelId != ''">
+                AND thing_model_id = #{thingModelId, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="getThingModelField"
+            resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField">
+        SELECT
+        thing_model_id,thing_model_field_id, field_name,`column`,label,custom_type,fixed_length,
+        link_field, unit, description, index_num, charset
+        FROM t_thing_model_field
+        <where>
+            <if test="thingModelFieldId != null and thingModelFieldId != ''">
+                AND thing_model_field_id = #{thingModelFieldId, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertSelective" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField">
+        INSERT INTO t_thing_model_field
+        (thing_model_id, thing_model_field_id, field_name, `column`, label, custom_type, fixed_length,
+        link_field, unit, description, index_num, charset, create_time, create_user, modify_time, modify_user)
         VALUES
-        (#{thingModelId},#{name},#{description},#{customType},#{defaultValue},#{valueLength},#{lenField},#{indexNum},#{charset},#{column},#{unit},#{label})
+        (#{thingModelId, jdbcType=VARCHAR},#{thingModelFieldId, jdbcType=VARCHAR},#{fieldName, jdbcType=VARCHAR},
+        #{column, jdbcType=VARCHAR},#{label, jdbcType=VARCHAR},#{customType, jdbcType=VARCHAR},
+        #{fixedLength, jdbcType=INTEGER},#{linkField, jdbcType=VARCHAR},#{unit, jdbcType=VARCHAR},
+        #{description, jdbcType=VARCHAR},#{indexNum, jdbcType=INTEGER},#{charset, jdbcType=VARCHAR},
+        #{createTime, jdbcType=TIMESTAMP},#{createUser, jdbcType=VARCHAR},#{modifyTime, jdbcType=TIMESTAMP},#{modifyUser, jdbcType=VARCHAR}))
     </insert>
 
-    <delete id="fieldListDelete" parameterType="java.lang.String">
+    <update id="updateSelective" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField">
+        UPDATE t_thing_model_field
+        <set>
+            <if test="fieldName != null and fieldName != ''">
+                field_name =  #{fieldName, jdbcType=VARCHAR},
+            </if>
+            <if test="column != null and column != ''">
+                `column` =  #{column, jdbcType=VARCHAR},
+            </if>
+            <if test="label != null and label != ''">
+                label =  #{label, jdbcType=VARCHAR},
+            </if>
+            <if test="customType != null and customType != ''">
+                custom_type =  #{customType, jdbcType=VARCHAR},
+            </if>
+            <if test="fixedLength != null and fixedLength != ''">
+                fixed_length =  #{fixedLength, jdbcType=INTEGER},
+            </if>
+            <if test="linkField != null and linkField != ''">
+                link_Field =  #{linkField, jdbcType=VARCHAR},
+            </if>
+            <if test="unit != null and unit != ''">
+                unit =  #{unit, jdbcType=VARCHAR},
+            </if>
+            <if test="description != null and description != ''">
+                description =  #{description, jdbcType=VARCHAR},
+            </if>
+            <if test="indexNum != null and indexNum != ''">
+                index_num =  #{indexNum, jdbcType=INTEGER},
+            </if>
+            <if test="charset != null and charset != ''">
+                charset =  #{charset, jdbcType=VARCHAR},
+            </if>
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyUser != null and modifyUser != ''">
+                modify_user = #{modifyUser,jdbcType=VARCHAR}
+            </if>
+        </set>
+        WHERE thing_model_field_id = #{thingModelFieldId,jdbcType=VARCHAR}
+    </update>
+
+    <delete id="deleteFiledByThingModelId">
         DELETE FROM
         t_thing_model_field
-        WHERE thing_model_id = #{thingModelId}
+        WHERE thing_model_field_id = #{thingModelFieldId, jdbcType=VARCHAR}
     </delete>
 
-    <select id="fieldListById" parameterType="java.lang.String"
-            resultType="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField">
+    <select id="listSensorFieldByDeviceModel" resultType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField">
         SELECT
-        name, description, custom_type, default_value,
-        value_length, len_field, index_num, `charset`, `column`, `unit`,`label`
-        FROM
-        t_thing_model_field
-        WHERE thing_model_id = #{thingModelId}
-        ORDER
-        BY
-        index_num
-    </select>
-
-    <select id="listSensoryThingModelFieldByDeviceModel"
-            resultMap="ThingModelFieldMap">
-        SELECT
-        tmf.name, tmf.label, tmf.unit, tmf.custom_type
+        tmf.field_name, tmf.label, tmf.unit, tmf.custom_type
         FROM
         t_thing_model_field tmf
         LEFT JOIN t_thing_model tm ON tmf.thing_model_id =
-        tm.thing_model_id WHERE tm.thing_model_type = 'sensory'
-        <if test="userId != null">
-            AND tm.create_user = #{userId}
-        </if>
-        <if test="deviceModel != null">
-            AND tm.device_model = #{deviceModel}
+        tm.thing_model_id WHERE tm.thing_model_type = 'sensor'
+        <if test="deviceModel != null and deviceModel != ''">
+            AND tm.device_model = #{deviceModel, jdbcType=VARCHAR}
         </if>
     </select>
 
-    <select id="listThingModelFieldByDeviceModel"
-            resultType="com.cetiti.iotp.itf.cfgservice.vo.ThingModelField">
-        SELECT
-        tmf.name, tmf.label, tmf.unit
-        FROM
-        t_thing_model_field tmf
-        LEFT JOIN t_thing_model tm ON tmf.thing_model_id =
-        tm.thing_model_id
+    <select id="selectCount" parameterType="com.cetiti.iotp.cfgservice.domain.entity.ThingModelField"
+        resultType="java.lang.Integer">
+        SELECT COUNT(thing_model_field_id) FROM t_thing_model_field
         <where>
-            <if test="userId != null">
-                AND tm.create_user = #{userId}
+            <if test="thingModelId != null and thingModelId != ''">
+                AND thing_model_id =  #{thingModelId, jdbcType=VARCHAR}
             </if>
-            <if test="deviceModel != null">
-                AND tm.device_model = #{deviceModel}
+            <if test="fieldName != null and fieldName != ''">
+                AND field_name =  #{fieldName, jdbcType=VARCHAR}
             </if>
-            <if test="thingModelType != null">
-                AND tm.thing_model_type = #{thingModelType}
+            <if test="thingModelFieldId != null and thingModelFieldId != ''">
+                AND thing_model_field_id =  #{thingModelFieldId, jdbcType=VARCHAR}
+            </if>
+            <if test="linkField != null and linkField != ''">
+                AND link_Field =  #{linkField, jdbcType=VARCHAR}
             </if>
         </where>
     </select>

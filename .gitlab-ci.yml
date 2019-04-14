@@ -17,8 +17,8 @@ build:dev:
   script: mvn clean package -Pdev
   artifacts:
     paths:
-      - target/${PROJECT_NAME}-*.zip
-  only:
+      - target/iotp-cfgservice-cli.zip
+  only: 
     - dev
 
 build:demo:
@@ -26,8 +26,8 @@ build:demo:
   script: mvn clean package -Pdemo
   artifacts:
     paths:
-      - target/${PROJECT_NAME}-*.zip
-  only:
+      - target/iotp-cfgservice-cli.zip
+  only: 
     - master
     - tags
 
@@ -38,7 +38,7 @@ deploy:dev:
    ## Install ssh-agent if not already installed, it is required by Docker.
    ## (change apt-get to yum if you use an RPM-based image)
    ##
-
+   
    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
 
    ##
@@ -74,12 +74,11 @@ deploy:dev:
    - ssh-keyscan ${DEV_SERVER_IP} >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - export PACKAGE_NAME=$(ls target/)
-   - scp target/${PACKAGE_NAME} root@${DEV_SERVER_IP}:${PROJECT_PATH}
+   - scp target/iotp-cfgservice-cli.zip root@${DEV_SERVER_IP}:${PROJECT_PATH}
    # - ssh root@${DEV_SERVER_IP} "[ -f ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh ] && sh ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh || echo 'not deployed'"
    # - ssh root@${DEV_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};sh ${PROJECT_PATH}/${PROJECT_NAME}/start.sh"
-   - ssh root@${DEV_SERVER_IP} "unzip -o ${PROJECT_PATH}/${PACKAGE_NAME} -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
-  only:
+   - ssh root@${DEV_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
+  only: 
     - dev
 
 deploy:demo:
@@ -89,7 +88,7 @@ deploy:demo:
    ## Install ssh-agent if not already installed, it is required by Docker.
    ## (change apt-get to yum if you use an RPM-based image)
    ##
-
+   
    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
 
    ##
@@ -125,11 +124,10 @@ deploy:demo:
    - ssh-keyscan ${DEMO_SERVER_IP} >> ~/.ssh/known_hosts
    - chmod 644 ~/.ssh/known_hosts
   script:
-   - export PACKAGE_NAME=$(ls target/)
-   - scp target/${PACKAGE_NAME} root@${DEMO_SERVER_IP}:${PROJECT_PATH}
+   - scp target/iotp-cfgservice-cli.zip root@${DEMO_SERVER_IP}:${PROJECT_PATH}
    # - ssh root@${DEMO_SERVER_IP} "[ -f ${PROJECT_PATH}/${PROJECT_NAME}/stop.sh ] && cd ${PROJECT_PATH}/${PROJECT_NAME}; sh stop.sh || echo 'not deployed'"
    # - ssh root@${DEMO_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME}; sh start.sh"
-   - ssh root@${DEMO_SERVER_IP} "unzip -o ${PROJECT_PATH}/${PACKAGE_NAME} -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
+   - ssh root@${DEMO_SERVER_IP} "unzip -o ${PROJECT_PATH}/iotp-cfgservice-cli.zip -d ${PROJECT_PATH};cd ${PROJECT_PATH}/${PROJECT_NAME};sh run.sh restart;"
   only: 
     - master
     - tags

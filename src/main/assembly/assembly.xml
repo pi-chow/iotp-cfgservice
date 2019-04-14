@@ -47,11 +47,6 @@
             </includes>
         </fileSet>
 
-        <fileSet>
-            <directory>build-libs</directory>
-            <outputDirectory>build-libs</outputDirectory>
-        </fileSet>
-
     </fileSets>
 
 </assembly>

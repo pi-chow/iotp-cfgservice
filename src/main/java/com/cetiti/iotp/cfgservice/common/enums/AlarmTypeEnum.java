@@ -1,14 +1,14 @@
-package com.cetiti.iotp.cfgservice.enums;
+package com.cetiti.iotp.cfgservice.common.enums;
 
-import com.cetiti.iotp.cfgservice.domain.AlarmType;
+import com.cetiti.iotp.cfgservice.domain.vo.AlarmType;
 
 /**
  * @author zhouliyu
  * @since 2019-03-26 11:44:11
  */
-public enum  AlarmTypeEnum {
+public enum AlarmTypeEnum {
 
-    SENSORY("感知报警", "sensory"), OFFLINE("离线报警", "offline");
+    SENSOR("感知报警", "sensor"), OFFLINE("离线报警", "offline");
 
     private String label;
     private String value;
@@ -33,4 +33,5 @@ public enum  AlarmTypeEnum {
         alarmType.setValue(alarmTypeEnum.getValue());
         return alarmType;
     }
+
 }

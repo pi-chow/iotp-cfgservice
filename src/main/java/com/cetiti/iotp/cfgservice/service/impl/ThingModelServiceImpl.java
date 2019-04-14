@@ -1,514 +1,323 @@
 package com.cetiti.iotp.cfgservice.service.impl;
 
-
-import com.cetiti.ddapv2.iotplatform.common.DataTypeStoreTypeRelation;
-import com.cetiti.ddapv2.iotplatform.common.StoreTypeEnum;
-import com.cetiti.ddapv2.iotplatform.common.ThingDataStrutTypeEnum;
-import com.cetiti.ddapv2.iotplatform.common.ThingDataTypeEnum;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
-import com.cetiti.ddapv2.iotplatform.common.utils.GenerationSequenceUtil;
-import com.cetiti.iotp.cfgservice.common.access.DevUser;
+import com.cetiti.ddapv2.iotplatform.common.thingModel.enums.CustomTypeEnum;
+import com.cetiti.ddapv2.iotplatform.common.thingModel.enums.StructTypeEnum;
+import com.cetiti.ddapv2.iotplatform.common.thingModel.enums.ThingModelTypeEnum;
+import com.cetiti.ddapv2.iotplatform.common.thingModel.relation.StructTypeCustomTypeRelation;
+import com.cetiti.ddapv2.iotplatform.common.thingModel.relation.ThingModelTypeStoreTypeRelation;
+import com.cetiti.iotp.cfgservice.common.result.CfgErrorCodeEnum;
+import com.cetiti.iotp.cfgservice.common.result.CfgServiceException;
+import com.cetiti.iotp.cfgservice.common.utils.DeviceModelValidateManger;
+import com.cetiti.iotp.cfgservice.common.utils.ThingModelValidateManager;
 import com.cetiti.iotp.cfgservice.common.zookeeper.CfgZkClient;
-import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
-import com.cetiti.iotp.cfgservice.common.utils.SqlGenerator;
-import com.cetiti.iotp.cfgservice.domain.ThingModelDef;
-import com.cetiti.iotp.cfgservice.domain.UserDefStrut;
-import com.cetiti.iotp.cfgservice.mapper.ThingModelDefMapper;
+import com.cetiti.iotp.cfgservice.domain.entity.ThingModelField;
+import com.cetiti.iotp.cfgservice.domain.entity.ThingModelHeader;
+import com.cetiti.iotp.cfgservice.domain.vo.CustomType;
+import com.cetiti.iotp.cfgservice.domain.vo.ThingModel;
+import com.cetiti.iotp.cfgservice.domain.vo.ThingModelType;
 import com.cetiti.iotp.cfgservice.mapper.ThingModelFieldMapper;
-import com.cetiti.iotp.cfgservice.service.ThingModelProcessor;
+import com.cetiti.iotp.cfgservice.mapper.ThingModelMapper;
+import com.cetiti.iotp.cfgservice.service.ThingModelProcess;
 import com.cetiti.iotp.cfgservice.service.ThingModelService;
-import com.cetiti.iotp.itf.assetservice.DeviceModelService;
 import com.cetiti.iotp.itf.assetservice.vo.DeviceModel;
-import com.cetiti.iotp.itf.cfgservice.vo.ThingModelField;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.cetiti.iotp.itf.cfgservice.vo.ThingModelFieldVo;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.dubbo.config.annotation.Reference;
 import org.apache.zookeeper.KeeperException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 模型服务实现类
- *
  * @author zhouliyu
+ * @since 2019-04-01 17:05:46
  */
+@Slf4j
 @org.apache.dubbo.config.annotation.Service(interfaceClass = com.cetiti.iotp.itf.cfgservice.ThingModelService.class, timeout = 6000)
 @Service
 public class ThingModelServiceImpl implements ThingModelService {
 
-	private static final Logger logger = LoggerFactory.getLogger(ThingModelServiceImpl.class);
+    @Value("${iotp.cfg.zkClient.watcher.paths}")
+    private String ZK_CLIENT_WATCHER_PATHS;
 
-	@Value("${iotp.cfg.zkClient.watcher.paths}")
-	private String paths;
+    @Autowired
+    private CfgZkClient cfgZkClient;
 
-	@Autowired
-	private ThingModelDefMapper modelDefMapper;
+    @Autowired
+    private ThingModelMapper thingModelMapper;
 
-    @Reference
-    private DeviceModelService deviceModelService;
+    @Autowired
+    private ThingModelFieldMapper thingModelFieldMapper;
 
-	@Autowired
-	private ThingModelFieldMapper fieldMapper;
+    @Autowired
+    private ThingModelProcess thingModelProcess;
 
-	@Autowired
-	private ThingModelProcessor modelProcessor;
+    @Autowired
+    private ThingModelValidateManager thingModelValidateManager;
 
-	@Autowired
-	private CfgZkClient cfgZkClient;
+    @Autowired
+    private DeviceModelValidateManger deviceModelValidateManger;
 
-
-	/**
-	 * 发布所有的物模型。
-	 *
-	 * @return 返回没有发布成功的物模型。
-	 */
-	public List<ThingModelDef> allModelPublish(JwtAccount account) {
-
-		logger.debug("Publis all model, account[{}].", account);
-
-		String userId = DevUser.isDeveloper(account);
-
-		List<ThingModelDef> modelList = modelDefMapper.modelList(userId, null);
-        List<ThingModelDef> failure = Lists.newArrayList();
-
-		if (modelList == null || modelList.size() == 0) {
-			return Lists.newArrayList();
-		}
-		//物模型发布
-		List<ThingModelDef> thingModelList = modelList.stream().filter(e -> {
-			return e.getThingModelType() != null
-					&& !e.getThingModelType().equalsIgnoreCase(ThingDataTypeEnum.STRUT.getValue());
-		}).collect(Collectors.toList());
-
-		if(thingModelList.size()!=0){
-            //-- 清空
-            modelProcessor.clearAllTarget();
+    /**
+     * 初始化构造器
+     * */
+    @PostConstruct
+    private void initThingModelBuild() {
+        List<String> failure = publish(null);
+        if(failure != null && failure.size() > 0){
+            log.warn("以下模型发布失败[" + failure.stream().collect(Collectors.joining(","))+ "]");
         }
+    }
 
-		for (ThingModelDef model : thingModelList) {
-			try {
-				modelProcessor.constructor(model);
-			} catch (BizLocaleException exception) {
-				logger.error("Construct model[" + model + "] fail.", exception);
-				failure.add(model);
-			}
-		}
-        //如果结构体发布失败，则需要返回错误，因为可能结构体发布失败会影响模型发布失败。
-        if (failure.size() > 0) {
-			modelProcessor.packageAll();
-            return failure;
-        }else {
-            // -- 打包
-            if(modelProcessor.packageAll() == 0){
-                // -- zookeeper 推送通知
+
+
+    @Override
+    public List<ThingModel> listThingModel(String deviceModel) {
+        List<ThingModelHeader> thingModelHeaderList = thingModelMapper.listThingModelHeader(deviceModel,null);
+        List<ThingModel> thingModelList = new ArrayList<>(thingModelHeaderList.size());
+        for (ThingModelHeader thingModelHeader: thingModelHeaderList){
+            ThingModel thingModel = new ThingModel();
+            thingModel.setThingModelHeader(thingModelHeader);
+            thingModel.setThingModelFields(thingModelFieldMapper.listThingModelField(thingModelHeader.getThingModelId()));
+            thingModelList.add(thingModel);
+        }
+        return thingModelList;
+    }
+
+    @Override
+    public int thingModelCount(String deviceModel) {
+        deviceModelValidateManger.validateDeviceModel(deviceModel);
+        ThingModelHeader thingModelHeader = new ThingModelHeader();
+        thingModelHeader.setDeviceModel(deviceModel);
+        return thingModelMapper.selectCount(thingModelHeader);
+    }
+
+    @Override
+    public boolean updateDeviceModelName(JwtAccount account, String deviceModel) {
+        DeviceModel deviceModelView = deviceModelValidateManger.getDeviceModel(deviceModel);
+        ThingModelHeader thingModelHeader = new ThingModelHeader();
+        thingModelHeader.setDeviceModelName(deviceModelView.deviceModelName);
+        thingModelHeader.setDeviceModel(deviceModel);
+        thingModelHeader.setModifyUser(account.getUserId());
+        thingModelHeader.setModifyTime(new Date());
+        return thingModelMapper.updateDeviceModelName(thingModelHeader) >= 1;
+    }
+
+    @Override
+    public List<String> publish(String deviceModel) {
+        List<ThingModel> thingModelList = listThingModel(deviceModel);
+        List<String> failure = new ArrayList<>();
+        List<String> javaFullPath = new ArrayList<>();
+
+        for (ThingModel thingModel : thingModelList){
+            try {
+                javaFullPath.add(thingModelProcess.classConstructor(thingModel));
+            }catch (BizLocaleException e){
+                failure.add(thingModel.getThingModelHeader().getDeviceModel()
+                        .concat(":").concat(thingModel.getThingModelHeader().getThingModelType()));
+                thingModelProcess.delFailureThingModel(thingModel.getThingModelHeader());
+            }
+        }
+        if(thingModelProcess.classCompiler(javaFullPath)){
+            if (thingModelProcess.classLoader()){
                 updateNodeData();
             }
         }
-		return failure;
-	}
-
-	/**
-	 * 根据型号查询对应的模型列表。
-	 */
-	@Override
-	public List<ThingModelDef> modelListByDeviceModelId(String deviceModelId) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModelId), "设备编号不能为空！");
-		List<ThingModelDef> modelList = modelDefMapper.modelListByDeviceModelId(deviceModelId);
-		return modelList;
-	}
-
-	/**
-	 * 通过模型编号获取模型
-	 * 
-	 * @param modelId
-	 *            模型编号
-	 *
-	 * @return
-	 */
-	@Override
-	public ThingModelDef modelViewById(String modelId) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
-		return modelDefMapper.modelViewById(modelId);
-	}
-
-	@Override
-	public int thingModelCount(String deviceModel, JwtAccount account) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModel), "设备型号不能为空！");
-		String userId = DevUser.isDeveloper(account);
-		return modelDefMapper.thingModelCount(userId, deviceModel);
-	}
-
-	/**
-	 * 从一个模板里面复制一个物模型.
-	 * 
-	 * @param modelTemplateId
-	 *            模板ID，也就是可以作为物模型模板的物模型ID。
-	 * @param deviceModelId
-	 *            设备型号ID。
-	 */
-	@Transactional
-	public void addModelFromTemplate(String modelTemplateId, String deviceModelId, JwtAccount account) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(modelTemplateId));
-		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelId));
-
-		List<ThingModelDef> existModelDefs = this.modelListByDeviceModelId(deviceModelId);
-		if (existModelDefs != null && existModelDefs.size() > 0) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
-		}
-
-		List<ThingModelDef> sensoryModelDefs = modelDefMapper.modelViewByDeviceModelIdAndModelType(modelTemplateId,
-				ThingDataTypeEnum.SENSORY.getValue());
-
-		if (sensoryModelDefs == null || sensoryModelDefs.size() != 1) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_INVALID);
-		}
-
-		if (!ThingModelDef.checkTemplate(sensoryModelDefs.get(0))) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_INVALID);
-		}
-
-		List<ThingModelDef> templateThingModelDefs = modelDefMapper.modelListByDeviceModelId(modelTemplateId);
-		if (templateThingModelDefs == null || templateThingModelDefs.size() == 0) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_MISS);
-		}
-
-		DeviceModel deviceModel = deviceModelService.deviceModelById(deviceModelId);
-		if (deviceModel == null) {
-			throw new BizLocaleException(CfgResultCode.DEVICE_MODEL_NOT_EXIST);
-		}
-
-		// -- 修改为新型号Id。
-		for (ThingModelDef templateThingModelDef : templateThingModelDefs) {
-			templateThingModelDef.setThingModelId(GenerationSequenceUtil.uuid());
-			templateThingModelDef.setDeviceModel(deviceModel.deviceModel);
-			templateThingModelDef.setDeviceModelName(deviceModel.deviceModelName);
-			templateThingModelDef.setDeviceModelId(deviceModel.deviceModelId);
-			ThingModelDef.makeNonTemplate(templateThingModelDef);
-
-			addModel(templateThingModelDef, account);
-		}
-	}
-
-	/**
-	 * 添加模型
-	 * 
-	 * @param model
-	 *
-	 * @return
-	 */
-	@Transactional
-	@Override
-	public String addModel(ThingModelDef model, JwtAccount account) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getDeviceModelId()), "设备编号不能为空！");
-		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
-		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
-		Preconditions.checkArgument(ThingDataStrutTypeEnum.check(model.getStructType()), "结构类型不存在");
-
-		List<ThingModelDef> existModelDefs = modelDefMapper
-				.modelViewByDeviceModelIdAndModelType(model.getDeviceModelId(), model.getThingModelType());
-
-		
-		if (existModelDefs != null && existModelDefs.size() > 1
-				&& !ThingDataTypeEnum.allowMultiRecord(model.getThingModelType())) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_INVALID);
-		}
-		
-		// --  名称、对应的设备id、类别一致的话，存在。
-		for (ThingModelDef def : existModelDefs) {
-			if (StringUtils.equalsIgnoreCase(def.getName(), model.getName()) 
-					&& StringUtils.equalsIgnoreCase(def.getDeviceModelId(), model.getDeviceModelId()) 
-					&& StringUtils.equalsIgnoreCase(def.getThingModelType(), model.getThingModelType())) {
-				throw new BizLocaleException(CfgResultCode.THING_MODEL_EXIST);
-			}
-		}
-
-		model.setThingModelId(GenerationSequenceUtil.uuid());
-		model.setTemplate(0);
-		model.setCreateTime(new Date());
-		model.setModifyTime(new Date());
-		model.setCreateUser(account.getUserId());
-		model.setModifyUser(account.getUserId());
-		if (StringUtils.isBlank(model.getName())) {
-			model.setName(model.getThingModelType());
-		}
-		modelDefMapper.modelAdd(model);
-
-		List<ThingModelField> fieldList = model.getFields();
-		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(model.getThingModelId(), fieldList);
-		}
-		return model.getThingModelId();
-	}
-
-	/**
-	 * 修改模型
-	 * 
-	 * @param model
-	 *
-	 * @return
-	 */
-	@Transactional
-	@Override
-	public boolean updateModel(JwtAccount account, ThingModelDef model) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelId()), "模型编号不能为空！");
-		Preconditions.checkArgument(StringUtils.isNoneBlank(model.getThingModelType()), "模型类型不能为空！");
-		Preconditions.checkArgument(ThingDataTypeEnum.check(model.getThingModelType()), "模型类型不存在");
-
-		model.setModifyTime(new Date());
-		model.setModifyUser(account.getUserId());
-		if (model.getFields() != null && model.getFields().size() > 0) {
-			String sqlString = SqlGenerator.createTable(model);
-			model.setSqls(sqlString);
-		}
-		int c = modelDefMapper.modelUpdate(model);
-
-		// -- 删除全部的字段。
-		delFieldList(model.getThingModelId());
-
-		List<ThingModelField> fieldList = model.getFields();
-		if (fieldList == null || fieldList.size() == 0) {
-			return c > 0;
-		}
-
-		if (fieldList != null && fieldList.size() > 0) {
-			fieldListAdd(model.getThingModelId(), fieldList);
-		}
-		return c > 0;
-	}
-
-	/**
-	 * 修改模型型号名称
-	 * 
-	 * @param deviceModelName
-	 *
-	 * @return
-	 */
-	@Override
-	public boolean updateModelName(JwtAccount account, String deviceModelName, String deviceModel) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
-		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModelName));
-		Preconditions.checkArgument(account != null);
-		Map<String,Object> args = new HashMap<>();
-		args.put("deviceModelName", deviceModelName);
-		args.put("deviceModel", deviceModel);
-		args.put("modifyUser", account.getUserId());
-		return modelDefMapper.deviceModelNameUpdateByModel(args) > 0;
-	}
-
-	/**
-	 * 删除设备模型
-	 * 
-	 * @param modelId
-	 *
-	 * @return
-	 */
-	@Transactional
-	@Override
-	public boolean deleteModel(String modelId) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
-		int c = modelDefMapper.modelDelete(modelId);
-		delFieldList(modelId);
-		return c > 0;
-	}
-
-	/**
-	 * 删除一个模板.
-	 * 
-	 * @param templateId
-	 *            模板ID即为设备模型标识.
-	 * 
-	 * @return
-	 */
-	@Override
-	public boolean deleteTemplate(String templateId) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(templateId));
-		List<ThingModelDef> thingModelDefs = modelListByDeviceModelId(templateId);
-		if (thingModelDefs == null || thingModelDefs.size() == 0) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_MISS);
-		}
-
-		return modelDefMapper.deleteTemplateByDeviceModelId(templateId) > 0;
-	}
-
-	@Deprecated
-	@Override
-	public List<String> getThingModelType(JwtAccount account, String deviceModel) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
-        String userId = DevUser.isDeveloper(account);
-        return modelDefMapper.getThingModelType(userId, deviceModel);
-	}
-
-	/**
-	 * 新增模型字段列表
-	 * 
-	 * @param fieldList
-	 * @param modelId
-	 *
-	 * @return
-	 */
-	@Transactional
-	@Override
-	public boolean fieldListAdd(String modelId, List<ThingModelField> fieldList) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(modelId), "模型编号不能为空！");
-		Preconditions.checkArgument(fieldList != null && fieldList.size() > 0);
-		for (ThingModelField field : fieldList) {
-			field.setThingModelId(modelId);
-			boolean success = addField(field);
-			if (!success) {
-				throw new BizLocaleException(CfgResultCode.DATABASE_ERROR);
-			}
-		}
-		return true;
-	}
-
-	/**
-	 * 新增模型字段
-	 */
-	protected boolean addField(ThingModelField field) {
-		Preconditions.checkArgument(StringUtils.isNoneBlank(field.getName()), "模型字段名不能为空！");
-		Preconditions.checkArgument(StringUtils.isNoneBlank(field.getCustomType()), "模型字段数据类型不能为空");
-		int c = fieldMapper.add(field);
-		return c > 0;
-	}
-
-	/**
-	 * 删除模型字段列表
-	 */
-	protected boolean delFieldList(String modelId) {
-		int c = fieldMapper.fieldListDelete(modelId);
-		return c > 0;
-	}
-
-	@Override
-	public List<String> strutType() {
-		List<ThingDataStrutTypeEnum> list = Arrays.asList(ThingDataStrutTypeEnum.values());
-		return list.stream().map(e -> {
-			return e.getValue();
-		}).collect(Collectors.toList());
-	}
-
-	@Override
-	public List<String> storeTypes() {
-		List<StoreTypeEnum> list = Lists.newArrayList(StoreTypeEnum.values());
-
-		return list.stream().map(e -> {
-			return e.getValue();
-		}).collect(Collectors.toList());
-	}
-
-	/**
-	 * 用户定义的结构体。
-	 */
-	@Override
-	public List<UserDefStrut> userDefStrutType(JwtAccount account) {
-		Preconditions.checkArgument(account != null, "用户信息没有。");
-
-		List<ThingModelDef> userDefineModelDef = modelDefMapper.modelList(account.getUserId(),
-				ThingDataTypeEnum.STRUT.getValue());
-
-		return userDefineModelDef.stream().map(e -> {
-			UserDefStrut userDefStrut = new UserDefStrut();
-			userDefStrut.deviceModel = e.getDeviceModel();
-			userDefStrut.name = e.getName();
-			userDefStrut.thingModelId = e.getThingModelId();
-			return userDefStrut;
-		}).collect(Collectors.toList());
-	}
-
-	@Override
-	public List<com.cetiti.iotp.itf.cfgservice.vo.ThingModelField> listSensoryThingModelFieldByDeviceModel(JwtAccount account, String deviceModel) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
-        String userId = DevUser.isDeveloper(account);
-
-		return fieldMapper.listSensoryThingModelFieldByDeviceModel(userId, deviceModel);
-	}
-
-    /**
-     * 根据设备型号获取模型属性
-     * @param account 用户
-     * @param deviceModel 设备型号
-     * @param thingModelName 协议模型名
-     * */
-    @Override
-    public List<ThingModelField> listThingModelFieldByDeviceModel(JwtAccount account, String deviceModel, String thingModelName) {
-        Preconditions.checkArgument(StringUtils.isNotBlank(deviceModel));
-        Preconditions.checkArgument(StringUtils.isNotBlank(thingModelName));
-        String userId = DevUser.isDeveloper(account);
-        return fieldMapper.listThingModelFieldByDeviceModel(userId, deviceModel, thingModelName);
+        return failure;
     }
 
     @Override
-	public List<String> getUsableStoreType(String dataType) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(dataType));
-		return DataTypeStoreTypeRelation.getStoreType(dataType);
-	}
+    public File getThingModelJar() {
+        return thingModelProcess.getThingModelJar();
+    }
 
-	@Override
-	public PageInfo<ThingModelDef> templateModelView(JwtAccount account, String deviceModel, String deviceModelName, int currentPage, int pageSize) {
+    @Override
+    public boolean addThingModelHeader(ThingModelHeader thingModelHeader) {
+        thingModelValidateManager.validateThingModelHeader(thingModelHeader);
+        switch (ThingModelTypeEnum.getThingModelTypeEnum(thingModelHeader.getThingModelType())){
+            case SENSOR:
+                thingModelHeader.setThingModelName(thingModelHeader.getThingModelType());
+                return thingModelMapper.insertSelective(thingModelHeader) >= 1;
+            case PROP:
+                thingModelHeader.setThingModelName(thingModelHeader.getThingModelType());
+                buildThingModelHeaderExceptSensor(thingModelHeader);
+                return thingModelMapper.insertSelective(thingModelHeader) >= 1;
+            case STATUS:
+                thingModelHeader.setThingModelName(thingModelHeader.getThingModelType());
+                buildThingModelHeaderExceptSensor(thingModelHeader);
+                return thingModelMapper.insertSelective(thingModelHeader) >= 1;
+            case EVENT:
+                buildThingModelHeaderExceptSensor(thingModelHeader);
+                return thingModelMapper.insertSelective(thingModelHeader) >= 1;
+        }
+        return false;
+    }
 
-		Map<String, Object> paras = Maps.newHashMap();
-
-		paras.put("userId", StringUtils.isBlank(DevUser.isDeveloper(account)) ? null : account.getUserId());
-		paras.put("deviceModel", StringUtils.isBlank(deviceModel) ? null : deviceModel);
-		paras.put("deviceModelName", StringUtils.isBlank(deviceModelName) ? null : deviceModelName);
-
-		PageHelper.startPage(currentPage, pageSize);
-		List<ThingModelDef> docs = modelDefMapper.templateModelView(paras);
-		PageInfo<ThingModelDef> pageInfo = new PageInfo<>(docs);
-		return pageInfo;
-	}
-
-	/**
-	 * 一个设备型号的物模型作为模板。
-	 * 
-	 * @param deviceModelId
-	 *            设备型号。
-	 */
-	public void makeTemplate(String deviceModelId, JwtAccount account) {
-
-		Preconditions.checkArgument(StringUtils.isNoneBlank(deviceModelId));
-
-		List<ThingModelDef> sensoryModelDefs = modelDefMapper.modelViewByDeviceModelIdAndModelType(deviceModelId,
-				ThingDataTypeEnum.SENSORY.getValue());
-
-		if (sensoryModelDefs.size() == 0) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_CREATE_SENSORY_NOT_EXIST);
-		}
-
-		if (ThingModelDef.checkTemplate(sensoryModelDefs.get(0))) {
-			throw new BizLocaleException(CfgResultCode.THING_MODEL_TEMPLATE_CREATE_EXIST);
-		}
-
-		ThingModelDef.makeTemplate(sensoryModelDefs.get(0));
-		this.updateModel(account, sensoryModelDefs.get(0));
-
-	}
-
-
-	/**
-     * zookeeper 更新/iotp/cfg/thingmodel/publish/time节点
+    /**
+     * 构建模型头信息：非感知类
+     * @param thingModelHeader 消息头信息
      * */
-	private void updateNodeData() {
-        String currentTime = String.valueOf(System.currentTimeMillis());
-		try {
-			cfgZkClient.setData(paths.split(",")[0],currentTime.getBytes());
-
-        } catch (KeeperException | InterruptedException exception) {
-            logger.error("zookeeper error: thingModel->" + exception);
+    private void buildThingModelHeaderExceptSensor(ThingModelHeader thingModelHeader){
+        List<String> storeTypes = ThingModelTypeStoreTypeRelation.getStoreType(thingModelHeader.getThingModelType());
+        thingModelHeader.setStoreType(storeTypes.stream().collect(Collectors.joining(",")));
+        ThingModelHeader thingModelHeaderSensor = thingModelMapper.getThingModelHeader(null,
+                thingModelHeader.getDeviceModel(), ThingModelTypeEnum.SENSOR.getValue());
+        if(thingModelHeaderSensor != null){
+            thingModelHeader.setStructType(thingModelHeaderSensor.getStructType());
+        }else {
+            throw new CfgServiceException(CfgErrorCodeEnum.THING_MODEL_SENSOR_NOT_EXIST);
         }
     }
 
+    @Override
+    public boolean deleteThingModel(String thingModelId) {
+        return thingModelMapper.deleteByPrimaryKey(thingModelId) >= 1;
+    }
+
+    @Override
+    public boolean addThingModelField(ThingModelField thingModelField) {
+        thingModelValidateManager.validateThingModelField(thingModelField);
+        thingModelField.setFixedLength(setFixLength(thingModelField));
+        return thingModelFieldMapper.insertSelective(thingModelField) >= 1;
+    }
+
+    @Override
+    public boolean updateThingModelField(ThingModelField thingModelField) {
+        thingModelValidateManager.validateThingModelField(thingModelField);
+        thingModelField.setFixedLength(setFixLength(thingModelField));
+        return thingModelFieldMapper.updateSelective(thingModelField) >= 1;
+    }
+
+    @Override
+    public boolean deleteThingModelField(String thingModelFieldId) {
+        ThingModelField thingModelField = thingModelFieldMapper.getThingModelField(thingModelFieldId);
+        thingModelValidateManager.validateThingModelField(thingModelField);
+        return thingModelFieldMapper.deleteByPrimaryKey(thingModelFieldId) >= 1;
+    }
+
+    @Override
+    public ThingModelField getThingModelField(String thingModelFieldId) {
+        return thingModelFieldMapper.getThingModelField(thingModelFieldId);
+    }
+
+
+    @Override
+    public List<ThingModelField> listThingModelField(String thingModelId) {
+        return thingModelFieldMapper.listThingModelField(thingModelId);
+    }
+
+    @Override
+    public List<ThingModelFieldVo> listSensorFieldByDeviceModel(String deviceModel) {
+
+        return thingModelFieldMapper.listSensorFieldByDeviceModel(deviceModel).stream().map(this::buildSensorFieldVo).collect(Collectors.toList());
+    }
+
+    private ThingModelFieldVo buildSensorFieldVo(ThingModelField thingModelField){
+        ThingModelFieldVo sensorField = new ThingModelFieldVo();
+        sensorField.setFieldName(thingModelField.getFieldName());
+        sensorField.setCustomType(thingModelField.getCustomType());
+        sensorField.setLabel(thingModelField.getLabel());
+        sensorField.setUnit(thingModelField.getUnit());
+        return sensorField;
+    }
+
+    @Override
+    public List<ThingModelType> getThingModelType() {
+        List<ThingModelTypeEnum> thingModelTypeEnumList = Arrays.asList(ThingModelTypeEnum.values());
+        return thingModelTypeEnumList.stream()
+                .filter(e -> e != ThingModelTypeEnum.STRUCT)
+                .map(this :: buildThingModelType)
+                .collect(Collectors.toList());
+
+    }
+
+    private ThingModelType buildThingModelType(ThingModelTypeEnum thingModelTypeEnum){
+        ThingModelType thingModelType = new ThingModelType();
+        thingModelType.setType(thingModelTypeEnum.getValue());
+        thingModelType.setName(thingModelTypeEnum.getName());
+        return thingModelType;
+    }
+
+
+
+    @Override
+    public List<String> getStoreType(String thingModelType) {
+        return ThingModelTypeStoreTypeRelation.getStoreType(thingModelType);
+    }
+
+    @Override
+    public List<String> getStructType() {
+        List<StructTypeEnum> list = Arrays.asList(StructTypeEnum.values());
+        return list.stream().map(StructTypeEnum::getValue).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CustomType> getFieldCustomType(String structType) {
+        List<String> CustomTypeList = StructTypeCustomTypeRelation.listCustomType(structType);
+        if(CustomTypeList != null){
+            return CustomTypeList.stream().map(this::setCustomType).collect(Collectors.toList());
+        }
+        return null;
+    }
+
+    /**
+     * customType类型转换
+     * @param customType 字段类型
+     * */
+    private CustomType setCustomType(String customType){
+        CustomType result = new CustomType();
+        CustomTypeEnum customTypeEnum = CustomTypeEnum.getCustomTypeEnum(customType);
+        if(customTypeEnum != null){
+            result.setType(customTypeEnum.getCustomType());
+            result.setName(customTypeEnum.getName());
+        }
+        return result;
+    }
+
+    /**
+     * 添加基本数据类型字节长度
+     * @param thingModelField 模型字段
+     * */
+    private int setFixLength(ThingModelField thingModelField){
+        ThingModelHeader thingModelHeader = thingModelMapper.getThingModelHeader(thingModelField.getThingModelId(), null, null);
+        String structType = thingModelHeader.getStructType();
+        if(structType.equals(StructTypeEnum.LV_BYTES.getValue())){
+                String customType = thingModelField.getCustomType();
+                if(StringUtils.isNoneBlank(customType)){
+                    int fixedLength = CustomTypeEnum.getCustomTypeEnum(customType).getFixedLength();
+                    switch (CustomTypeEnum.getCustomTypeEnum(customType)){
+                        case FIXED_STRING:
+                            return thingModelField.getFixedLength();
+                        case UNFIXED_STRING:
+                            break;
+                        default:
+                            return fixedLength;
+                    }
+                }
+        }
+        return 0;
+    }
+
+    /**
+     * zookeeper 更新/iotp/cfg/thingmodel/publish/time节点
+     * */
+    private void updateNodeData() {
+        String currentTime = String.valueOf(System.currentTimeMillis());
+        try {
+            cfgZkClient.setData(ZK_CLIENT_WATCHER_PATHS.split(",")[0],currentTime.getBytes());
+        } catch (KeeperException | InterruptedException exception) {
+            log.error("zookeeper error: thingModel->" + exception);
+            throw new CfgServiceException(CfgErrorCodeEnum.ZOOKEEPER_UPDATE_DATA_ERROR);
+        }
+    }
 }

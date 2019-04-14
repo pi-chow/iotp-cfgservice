@@ -1,97 +1,82 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.cetiti.iotp.cfgservice.mapper.DeviceAlarmConfigMapper">
-    <resultMap id="BaseResultMap" type="com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig">
-        <id column="id" jdbcType="BIGINT" property="id"/>
-        <result column="device_model" jdbcType="VARCHAR" property="deviceModel"/>
-        <result column="device_model_name" jdbcType="VARCHAR" property="deviceModelName"/>
-        <result column="field" jdbcType="VARCHAR" property="field"/>
-        <result column="alarm_type" jdbcType="VARCHAR" property="alarmType"/>
-        <result column="alarm_level" jdbcType="TINYINT" property="alarmLevel"/>
-        <result column="relation" jdbcType="VARCHAR" property="relation"/>
-        <result column="threshold" jdbcType="VARCHAR" property="threshold"/>
-        <result column="description" jdbcType="VARCHAR" property="description"/>
-        <result column="alarm_id" jdbcType="VARCHAR" property="alarmId"/>
-        <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime"/>
-        <result column="create_user" jdbcType="VARCHAR" property="createUser"/>
-        <result column="modify_user" jdbcType="VARCHAR" property="modifyUser"/>
-        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
-    </resultMap>
 
     <sql id="Base_Column_List">
-        id, device_model, device_model_name, field, relation, threshold,  description, alarm_id, alarm_level, alarm_type,
-        modify_time, create_user, modify_user, create_time
+        alarm_id, device_model, device_model_name, field, relation, threshold, description, alarm_level, alarm_type,
+        create_user, create_time, modify_user, modify_time
     </sql>
 
-    <select id="getAlarmConfig" parameterType="java.lang.String" resultMap="BaseResultMap">
-        select
-        <include refid="Base_Column_List"/>
-        from t_device_alarm_config
-        where alarm_id = #{alarmId,jdbcType=VARCHAR}
+    <select id="getDeviceAlarmConfig" resultType="com.cetiti.iotp.cfgservice.domain.entity.DeviceAlarmConfig">
+        SELECT
+        <include refid="Base_Column_List"></include>
+        FROM t_device_alarm_config
+        WHERE alarm_id = #{alarmId,jdbcType=VARCHAR}
     </select>
 
-    <select id="searchDeviceAlarmConfig" parameterType="java.util.Map" resultMap="BaseResultMap">
-        select
+    <select id="listDeviceAlarmConfig" parameterType="java.util.Map" resultType="com.cetiti.iotp.cfgservice.domain.entity.DeviceAlarmConfig">
+        SELECT
         <include refid="Base_Column_List"/>
-        from t_device_alarm_config
+        FROM t_device_alarm_config
         <where>
-            <if test="deviceModel != null">
-                AND device_model = #{deviceModel}
+            <if test="deviceModel != null and deviceModel != ''">
+                AND device_model = #{deviceModel, jdbcType=VARCHAR}
             </if>
-            <if test="createUser != null">
-                AND create_user = #{createUser}
+            <if test="createUser != null and createUser != ''">
+                AND create_user = #{createUser, jdbcType=VARCHAR}
             </if>
-            <if test="alarmType != null">
-                AND alarm_type = #{alarmType}
+            <if test="alarmType != null and alarmType != ''">
+                AND alarm_type = #{alarmType, jdbcType=VARCHAR}
             </if>
         </where>
     </select>
 
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
-      delete from t_device_alarm_config
-      where alarm_id = #{alarmId,jdbcType=VARCHAR}
-    </delete>
-
-    <insert id="insert" parameterType="com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig">
-        insert into t_device_alarm_config (device_model, device_model_name, field, relation, threshold,
+    <insert id="insertSelective" parameterType="com.cetiti.iotp.cfgservice.domain.entity.DeviceAlarmConfig">
+        INSERT INTO t_device_alarm_config (device_model, device_model_name, field, relation, threshold,
         description, alarm_id, alarm_level, alarm_type, create_user, create_time, modify_time, modify_user)
-        values (#{deviceModel,jdbcType=VARCHAR}, #{deviceModelName,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
+        VALUES (#{deviceModel,jdbcType=VARCHAR}, #{deviceModelName,jdbcType=VARCHAR}, #{field,jdbcType=VARCHAR},
                 #{relation,jdbcType=VARCHAR},#{threshold,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR},
                 #{alarmId,jdbcType=VARCHAR}, #{alarmLevel,jdbcType=TINYINT},#{alarmType,jdbcType=VARCHAR},
                 #{createUser,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP},
                 #{modifyTime,jdbcType=TIMESTAMP}, #{modifyUser,jdbcType=VARCHAR})
     </insert>
 
-    <update id="updateByPrimaryKeySelective" parameterType="com.cetiti.iotp.cfgservice.domain.DeviceAlarmConfig">
-        update t_device_alarm_config
-            <set>
-                <if test="deviceModel != null">
-                    device_model = #{deviceModel,jdbcType=VARCHAR},
-                </if>
-                <if test="deviceModelName != null">
-                    device_model_name = #{deviceModelName,jdbcType=VARCHAR},
-                </if>
-                <if test="field != null">
-                    field = #{field,jdbcType=VARCHAR},
-                </if>
-                <if test="relation != null">
-                    relation = #{relation,jdbcType=VARCHAR},
-                </if>
-                <if test="threshold != null">
-                    threshold = #{threshold,jdbcType=VARCHAR},
-                </if>
-                    alarm_Level = #{alarmLevel,jdbcType=TINYINT},
-                <if test="alarmType != null">
-                    alarm_type = #{alarmType,jdbcType=VARCHAR},
-                </if>
-                   description = #{description,jdbcType=VARCHAR},
-                <if test="modifyTime != null">
-                    modify_time = #{modifyTime,jdbcType=TIMESTAMP},
-                </if>
-                <if test="modifyUser != null">
-                    modify_user = #{modifyUser,jdbcType=VARCHAR},
-                </if>
-            </set>
-        where alarm_id = #{alarmId,jdbcType=VARCHAR}
+    <update id="updateSelective" parameterType="com.cetiti.iotp.cfgservice.domain.entity.DeviceAlarmConfig">
+        UPDATE t_device_alarm_config
+        <set>
+            <if test="deviceModel != null and deviceModel != ''">
+                device_model = #{deviceModel,jdbcType=VARCHAR},
+            </if>
+            <if test="deviceModelName != null and deviceModelName != ''">
+                device_model_name = #{deviceModelName,jdbcType=VARCHAR},
+            </if>
+            <if test="field != null and field != ''">
+                field = #{field,jdbcType=VARCHAR},
+            </if>
+            <if test="relation != null and relation != ''">
+                relation = #{relation,jdbcType=VARCHAR},
+            </if>
+            <if test="threshold != null and threshold != ''">
+                threshold = #{threshold,jdbcType=VARCHAR},
+            </if>
+                alarm_Level = #{alarmLevel,jdbcType=TINYINT},
+            <if test="alarmType != null and alarmType != ''">
+                alarm_type = #{alarmType,jdbcType=VARCHAR},
+            </if>
+                description = #{description,jdbcType=VARCHAR},
+            <if test="modifyTime != null">
+                modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+            </if>
+            <if test="modifyUser != null and modifyUser != ''">
+                modify_user = #{modifyUser,jdbcType=VARCHAR}
+            </if>
+        </set>
+        WHERE alarm_id = #{alarmId,jdbcType=VARCHAR}
     </update>
+
+    <delete id="deleteByPrimaryKey">
+        delete from t_device_alarm_config
+        where alarm_id = #{alarmId,jdbcType=VARCHAR}
+    </delete>
+
 </mapper>

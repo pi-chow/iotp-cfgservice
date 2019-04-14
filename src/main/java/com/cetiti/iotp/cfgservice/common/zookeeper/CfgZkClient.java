@@ -1,7 +1,7 @@
 package com.cetiti.iotp.cfgservice.common.zookeeper;
 
-import com.cetiti.ddapv2.iotplatform.common.exception.BizLocaleException;
-import com.cetiti.iotp.cfgservice.common.result.CfgResultCode;
+import com.cetiti.iotp.cfgservice.common.result.CfgErrorCodeEnum;
+import com.cetiti.iotp.cfgservice.common.result.CfgServiceException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -79,7 +78,7 @@ public class CfgZkClient {
         if(StringUtils.isNoneBlank(paths)){
             return paths.split(",");
         }else {
-            throw new BizLocaleException(CfgResultCode.ZOOKEEPER_ERROR);
+            throw new CfgServiceException(CfgErrorCodeEnum.ZOOKEEPER_ERROR);
         }
     }
 

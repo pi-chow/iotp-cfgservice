@@ -3,9 +3,9 @@ package com.cetiti.iotp.cfgservice.common.access;
 import com.cetiti.ddapv2.iotplatform.common.domain.vo.JwtAccount;
 
 /**
- * 用来存放从session中获取的user。
- *
- * @author yangshutian
+ * 配置UserArgumentResolver。
+ * @author zhouliyu
+ * @since 2019-04-11 14:19:07
  */
 public class AccountContext {
     private static ThreadLocal<JwtAccount> accountHolder = new ThreadLocal<JwtAccount>();

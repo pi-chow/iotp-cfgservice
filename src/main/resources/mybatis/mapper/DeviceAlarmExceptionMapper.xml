@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cetiti.iotp.cfgservice.mapper.DeviceAlarmExceptionMapper">
+    <select id="listDeviceAlarmException" parameterType="java.util.Map"
+            resultType="com.cetiti.iotp.cfgservice.domain.entity.DeviceAlarmException">
+        SELECT ea.*,dac.device_model_name
+        FROM t_exception_alarm ea LEFT JOIN t_device_alarm_config dac ON ea.device_model = dac.device_model
+        <where>
+            <if test="deviceModel != null and deviceModel != ''">
+                AND ea.device_model = #{deviceModel, jdbcType=VARCHAR}
+            </if>
+            <if test="deviceSn != null and deviceSn != ''">
+                AND ea.device_sn LIKE CONCAT('%',#{deviceSn, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="startTime != null">
+                AND <![CDATA[ ea.create_time > #{startTime, jdbcType=TIMESTAMP} ]]>
+            </if>
+            <if test="endTime != null">
+                AND <![CDATA[ ea.create_time < #{endTime, jdbcType=TIMESTAMP} ]]>
+            </if>
+            <if test="conditions != null and conditions != ''">
+                AND ea.conditions LIKE CONCAT('%',#{conditions, jdbcType=VARCHAR},'%')
+            </if>
+            <if test="createUser != null and createUser != ''">
+                AND dac.create_user = #{createUser, jdbcType=VARCHAR}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectCount" resultType="Integer">
+        SELECT COUNT(id)
+        FROM t_exception_alarm
+        WHERE device_model = #{deviceModel, jdbcType=VARCHAR}
+    </select>
+</mapper>
